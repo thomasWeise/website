@@ -18,13 +18,13 @@ public class Main {
 
   /**
    * The main entry point of the website builder
-   * 
+   *
    * @param args
    *          the command line arguments: 1) input folder, 2) output folder
    * @throws IOException
    *           if i/o fails
    */
-  public static void main(String[] args) throws IOException {
+  public static void main(final String[] args) throws IOException {
     final Logger logger;
     final Configuration config;
     final Path source, dest;
@@ -37,30 +37,30 @@ public class Main {
       logger.info("Welcome to the website builder."); //$NON-NLS-1$
     }
 
-    source = config.getPath(PARAM_SOURCE, null);
+    source = config.getPath(Main.PARAM_SOURCE, null);
     if (source == null) {
       if (logger != null) {
         logger.severe("Must specify source folder with argument '" + //$NON-NLS-1$
-            PARAM_SOURCE + "=...'."); //$NON-NLS-1$
+            Main.PARAM_SOURCE + "=...'."); //$NON-NLS-1$
       }
       return;
     }
 
-    dest = config.getPath(PARAM_DEST, null);
+    dest = config.getPath(Main.PARAM_DEST, null);
     if (dest == null) {
       if (logger != null) {
         logger.severe("Must specify destination folder with argument '" + //$NON-NLS-1$
-            PARAM_SOURCE + "=...'."); //$NON-NLS-1$
+            Main.PARAM_SOURCE + "=...'."); //$NON-NLS-1$
       }
       return;
     }
 
-    build(source, dest, logger);
+    Main.build(source, dest, logger);
   }
 
   /**
    * Build the website
-   * 
+   *
    * @param source
    *          the source folder
    * @param dest

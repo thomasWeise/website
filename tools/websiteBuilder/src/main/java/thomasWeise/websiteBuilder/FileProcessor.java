@@ -20,7 +20,7 @@ public class FileProcessor {
 
   /**
    * process the file
-   * 
+   *
    * @param source
    *          the source path
    * @param dest
@@ -35,27 +35,22 @@ public class FileProcessor {
    *           if i/o fails
    */
   public static final void processFile(final Path source, final Path dest,
-      final Path base, BasicFileAttributes attrs, final Logger logger)
-          throws IOException {
+      final Path base, final BasicFileAttributes attrs,
+      final Logger logger) throws IOException {
     final StringBuilder data;
 
-    data = load(source, attrs);
-    
-    if("html".equalsIgnoreCase(PathUtils.getFileExtension(source))){ //$NON-NLS-1$
+    data = FileProcessor.__load(source, attrs);
+
+    if ("html".equalsIgnoreCase(PathUtils.getFileExtension(source))) { //$NON-NLS-1$
       HTML.processHTML(source, base, data);
     }
-    
-    store(data, dest);
-  }
-  
-  
- 
-  
 
-  
+    FileProcessor.__store(data, dest);
+  }
+
   /**
    * Loads the contents of a given path.
-   * 
+   *
    * @param path
    *          the path
    * @return the loaded contents
@@ -64,7 +59,7 @@ public class FileProcessor {
    * @throws IOException
    *           if i/o fails
    */
-  public static final StringBuilder load(final Path path,
+  private static final StringBuilder __load(final Path path,
       final BasicFileAttributes attrs) throws IOException {
     final char[] data;
     final StringBuilder sb;
@@ -86,13 +81,13 @@ public class FileProcessor {
       throw new IOException("File size of '" + path + "' corrupt."); //$NON-NLS-1$ //$NON-NLS-2$
     }
     sb = new StringBuilder(read);
-    sb.append(data);
+    sb.append(data, 0, read);
     return sb;
   }
 
   /**
    * process the data
-   * 
+   *
    * @param data
    *          the data
    * @param dest
@@ -100,8 +95,8 @@ public class FileProcessor {
    * @throws IOException
    *           if i/o fails
    */
-  public static final void store(final CharSequence data, final Path dest)
-      throws IOException {
+  private static final void __store(final CharSequence data,
+      final Path dest) throws IOException {
     final ITextOutput to;
     final int length;
     char ch;

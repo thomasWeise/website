@@ -2,6 +2,7 @@ package thomasWeise.websiteBuilder;
 
 import java.nio.file.Path;
 
+import org.optimizationBenchmarking.utils.io.paths.PathUtils;
 import org.optimizationBenchmarking.utils.text.TextUtils;
 
 /** The HTML file processor. */
@@ -9,7 +10,7 @@ public class HTML {
 
   /**
    * Process a HTML document
-   * 
+   *
    * @param source
    *          the source path
    * @param base
@@ -20,9 +21,25 @@ public class HTML {
   public static final void processHTML(final Path source, final Path base,
       final StringBuilder data) {
     final Path parent;
-    int i, j;
 
     parent = source.getParent();
+    HTML.__resolveURLs(parent, base, data);
+    HTML.__resolveLinks(parent, base, data);
+  }
+
+  /**
+   * Resolve urls {{ urls }}
+   *
+   * @param parent
+   *          the parent dir
+   * @param base
+   *          the base path
+   * @param data
+   *          the document
+   */
+  private static final void __resolveURLs(final Path parent,
+      final Path base, final StringBuilder data) {
+    int i, j;
 
     j = 0;
     while (j >= 0) {
@@ -31,7 +48,7 @@ public class HTML {
         j = data.indexOf("}}", i); //$NON-NLS-1$
         if (j > i) {
           data.replace(i, j + 2, //
-              resolve(data.substring(i + 2, j), parent, base));
+              HTML.__resolve(data.substring(i + 2, j), parent, base));
           continue;
         }
       }
@@ -40,8 +57,62 @@ public class HTML {
   }
 
   /**
+   * Resolve links [[ link ] title ]
+   *
+   * @param parent
+   *          the parent dir
+   * @param base
+   *          the base path
+   * @param data
+   *          the document
+   */
+  private static final void __resolveLinks(final Path parent,
+      final Path base, final StringBuilder data) {
+    int i, j, k;
+    String url, title, replace, extension;
+
+    k = 0;
+    while (k >= 0) {
+      i = data.indexOf("[[", k); //$NON-NLS-1$
+      if (i > 0) {
+        j = data.indexOf("]", i); //$NON-NLS-1$
+        if (j > i) {
+          k = data.indexOf("]", j + 1); //$NON-NLS-1$
+          if (k > j) {
+
+            url = HTML.__resolve(data.substring(i + 2, j), parent, base);
+            extension = PathUtils.getFileExtension(url).toLowerCase();
+            title = TextUtils.prepare(data.substring(j + 1, k));
+
+            if (title == null) {
+              title = extension;
+            }
+
+            replace = "<a href=\"" + url //$NON-NLS-1$
+                + "\">"; //$NON-NLS-1$
+
+            if (!("html".equalsIgnoreCase(extension))) {//$NON-NLS-1$
+              replace += "<img src=\"" + //$NON-NLS-1$
+                  parent.relativize(base.resolve("icons/" + extension + //$NON-NLS-1$
+                      ".png")).toString() //$NON-NLS-1$
+                  + "\" class=\"icon" //$NON-NLS-1$
+                  + "\" />&nbsp;"; //$NON-NLS-1$
+            }
+
+            replace += title + "</a>"; //$NON-NLS-1$
+
+            data.replace(i, k + 1, replace);
+            continue;
+          }
+        }
+      }
+      break;
+    }
+  }
+
+  /**
    * Resolve a URL
-   * 
+   *
    * @param url
    *          the url
    * @param parent
@@ -50,8 +121,8 @@ public class HTML {
    *          the base url
    * @return the resolved url
    */
-  public static final String resolve(final String url, final Path parent,
-      final Path base) {
+  private static final String __resolve(final String url,
+      final Path parent, final Path base) {
     final Path path, path2;
     String str;
 

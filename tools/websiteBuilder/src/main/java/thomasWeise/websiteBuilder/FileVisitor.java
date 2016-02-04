@@ -25,7 +25,7 @@ public class FileVisitor extends SimpleFileVisitor<Path> {
 
   /**
    * create
-   * 
+   *
    * @param source
    *          the source path
    * @param dest
@@ -43,8 +43,8 @@ public class FileVisitor extends SimpleFileVisitor<Path> {
 
   /** {@inheritDoc} */
   @Override
-  public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
-      throws IOException {
+  public FileVisitResult visitFile(final Path file,
+      final BasicFileAttributes attrs) throws IOException {
     final FileVisitResult res;
     final Path dest;
 
@@ -62,7 +62,8 @@ public class FileVisitor extends SimpleFileVisitor<Path> {
         if (attrs.size() > 0L) {
           Files.createDirectories(dest.getParent());
 
-          FileProcessor.processFile(file, dest, this.m_source, attrs, this.m_logger);
+          FileProcessor.processFile(file, dest, this.m_source, attrs,
+              this.m_logger);
 
           if ((this.m_logger != null)
               && (this.m_logger.isLoggable(Level.INFO))) {

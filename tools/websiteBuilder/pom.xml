@@ -43,7 +43,7 @@
 		<project.reporting.outputEncoding>${encoding}</project.reporting.outputEncoding>
 		<jdk.version>1.7</jdk.version>
 		<junit.version>4.11</junit.version>
-		<utils-base.version>0.8.5-SNAPSHOT</utils-base.version>
+		<utils-base.version>[0.8.5-SNAPSHOT,)</utils-base.version>
 		<project.mainClass>thomasWeise.websiteBuilder.Main</project.mainClass>
 	</properties>
 
