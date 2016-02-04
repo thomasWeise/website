@@ -1,5 +1,7 @@
 package thomasWeise.websiteBuilder;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -19,8 +21,10 @@ public class Main {
    * 
    * @param args
    *          the command line arguments: 1) input folder, 2) output folder
+   * @throws IOException
+   *           if i/o fails
    */
-  public static void main(String[] args) {
+  public static void main(String[] args) throws IOException {
     final Logger logger;
     final Configuration config;
     final Path source, dest;
@@ -36,8 +40,8 @@ public class Main {
     source = config.getPath(PARAM_SOURCE, null);
     if (source == null) {
       if (logger != null) {
-        logger.severe(
-            "Must specify source folder with argument 'source=...'."); //$NON-NLS-1$
+        logger.severe("Must specify source folder with argument '" + //$NON-NLS-1$
+            PARAM_SOURCE + "=...'."); //$NON-NLS-1$
       }
       return;
     }
@@ -45,8 +49,8 @@ public class Main {
     dest = config.getPath(PARAM_DEST, null);
     if (dest == null) {
       if (logger != null) {
-        logger.severe(
-            "Must specify destination folder with argument 'dest=...'."); //$NON-NLS-1$
+        logger.severe("Must specify destination folder with argument '" + //$NON-NLS-1$
+            PARAM_SOURCE + "=...'."); //$NON-NLS-1$
       }
       return;
     }
@@ -63,13 +67,17 @@ public class Main {
    *          the destination folder
    * @param logger
    *          the logger
+   * @throws IOException
+   *           if i/o fails
    */
   public static final void build(final Path source, final Path dest,
-      final Logger logger) {
+      final Logger logger) throws IOException {
     if ((logger != null) && (logger.isLoggable(Level.INFO))) {
       logger.info("Building website from source '" + source + //$NON-NLS-1$
           "' to dest '" + dest + '\'' + '.');//$NON-NLS-1$
     }
+
+    Files.walkFileTree(source, new FileVisitor(source, dest, logger));
 
     if ((logger != null) && (logger.isLoggable(Level.INFO))) {
       logger.info("Finished building website.");//$NON-NLS-1$

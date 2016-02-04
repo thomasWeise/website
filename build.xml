@@ -1,22 +1,26 @@
 <project name="website" basedir="." default="build" xmlns:if="ant:if" xmlns:unless="ant:unless">
 	<description>
-	Build the website.
+	Build the builder.websiteDir.
 	</description>
 
-	<property name="website" location="website" />
-	<property name="tools" location="tools" />
-	<property name="websiteBuilder" location="${tools}/websiteBuilder" />
-	<property name="websiteBuilderTarget" location="${websiteBuilder}/target" />
-	<property name="websiteSource" location="${website}/source" />
-	<property name="websiteDest" location="${website}/build" />
-	<property name="websiteTemp" location="${website}/temp" />
+	<property name="builder.websiteDir" location="website" />
+	<property name="builder.toolsDir" location="tools" />
+	<property name="builder.websiteBuilderDir" location="${builder.toolsDir}/websiteBuilder" />
+	<property name="builder.websiteBuilderTargetDir" location="${builder.websiteBuilderDir}/target" />
+	<property name="builder.websiteSourceDir" location="${builder.websiteDir}/source" />
+	<property name="builder.websiteResourcesDir" location="${builder.websiteSourceDir}/resources" />
+	<property name="builder.websiteIncludesDir" location="${builder.websiteSourceDir}/include" />
+	<property name="builder.websiteDestDir" location="${builder.websiteDir}/build" />
+	<property name="builder.websiteTempDir" location="${builder.websiteDir}/temp" />
+
+	<property file="${builder.websiteDir}/website.properties" />
 
 	<macrodef name="clean" description="Clean the intermediate files.">
 		<sequential>
 			<echo message="Begin cleaning up old files and folders." />
-			<delete dir="${websiteBuilderTarget}" />
-			<delete dir="${websiteBuilder}/bin" />
-			<delete dir="${websiteTemp}" />
+			<delete dir="${builder.websiteBuilderTargetDir}" />
+			<delete dir="${builder.websiteBuilderDir}/bin" />
+			<delete dir="${builder.websiteTempDir}" />
 			<echo message="Finished cleaning up old files and folders." />
 		</sequential>
 	</macrodef>
@@ -25,23 +29,23 @@
 		<sequential>
 			<echo message="Begin building the websiteBuilder project." />
 			<subant target="build">
-				<fileset dir="${websiteBuilder}" includes="build.xml" />
+				<fileset dir="${builder.websiteBuilderDir}" includes="build.xml" />
 			</subant>
 			<echo message="Finished building the websiteBuilder project." />
 		</sequential>
 	</macrodef>
 
-	<macrodef name="websiteBuilder-exec" description="Execute the website builder.">
+	<macrodef name="websiteBuilder-exec" description="Execute the builder.websiteDir builder.">
 		<attribute name="fromDir" />
 		<attribute name="toDir" />
 		<sequential>
-			<echo message="Executing the website builder from '@{fromDir}' to '@{toDir}'." />
+			<echo message="Executing the websiteBuilder from '@{fromDir}' to '@{toDir}'." />
 			<mkdir dir="@{toDir}" />
-			<java jar="${websiteBuilderTarget}/websiteBuilder-0.8.5-SNAPSHOT-full.jar" failonerror="true" fork="true" dir="@{fromDir}">
+			<java jar="${builder.websiteBuilderTargetDir}/websiteBuilder-0.8.5-SNAPSHOT-full.jar" failonerror="true" fork="true" dir="@{fromDir}">
 				<arg value="source=@{fromDir}" />
 				<arg value="dest=@{toDir}" />
 			</java>
-			<echo message="Finished executing the website builder from '@{fromDir}' to '@{toDir}'." />
+			<echo message="Finished executing the websiteBuilder from '@{fromDir}' to '@{toDir}'." />
 		</sequential>
 	</macrodef>
 
@@ -64,11 +68,19 @@
 				<filelist dir="@{fromDir}/css/print/base/" files="normalize.css,baseLayout.css" />
 				<fileset dir="@{fromDir}/css/print/extension" includes="*.css" />
 			</concat>
+			
+			<loadfile property="menu" srcFile="${builder.websiteIncludesDir}/menu.html"/>
 
 			<copy todir="@{toDir}">
 				<fileset dir="@{fromDir}/html">
 					<include name="**/*.html" />
 				</fileset>
+				<filterchain>
+					<concatfilter prepend="${builder.websiteIncludesDir}/header.html" />
+					<concatfilter append="${builder.websiteIncludesDir}/footer.html" />
+					<expandproperties />
+					<expandproperties />
+				</filterchain>
 			</copy>
 
 			<echo message="Finished assembling HTML and CSS from '@{fromDir}' to '@{toDir}'." />
@@ -90,41 +102,29 @@
 		</sequential>
 	</macrodef>
 
-	<macrodef name="removeDoubleSpaces" description="Remove all redundant white space.">
-		<attribute name="fileSet" />
-		<sequential>
-			<replaceregexp match="\s+" replace=" " flags="gi" byline="true">
-				<fileset refid="@{fileSet}" />
-			</replaceregexp>
-
-			<replaceregexp match="\s*\r?\n\r?\s*" replace="" flags="gi" byline="false">
-				<fileset refid="@{fileSet}" />
-			</replaceregexp>
-		</sequential>
-	</macrodef>
 
 	<macrodef name="cleanHTMLBlockTag" description="Clean a block tag.">
 		<attribute name="tag" />
 		<attribute name="fileSet" />
 		<sequential>
 
-			<replaceregexp match="\s*\n*\s*&lt;\s*\n*\s*@{tag}\s*\n*\s*>\s*\n*\s*" flags="gi" replace="&lt;@{tag}>">
-				<fileset refid="@{fileSet}" />
-			</replaceregexp>
-			
-			<replaceregexp match="\s*\n*\s*&lt;\s*\n*\s*@{tag}\s*\n*\s*/\s*\n*\s*>\s*\n*\s*" flags="gi" replace="&lt;@{tag}/>">
-				<fileset refid="@{fileSet}" />
-			</replaceregexp>
-			
-			<replaceregexp match="\s*\n*\s*&lt;/\s*\n*\s*@{tag}\s*\n*\s*>\s*\n*\s*" flags="gi" replace="&lt;/@{tag}>">
+			<replaceregexp match="\s*\r*\n*\r*\s*&lt;\s*\r*\n*\r*\s*@{tag}\s*\r*\n*\r*\s*>\s*\r*\n*\r*\s*" flags="gi" replace="&lt;@{tag}>">
 				<fileset refid="@{fileSet}" />
 			</replaceregexp>
 
-			<replaceregexp match="\s*\n*\s*&lt;\s*\n*\s*@{tag}\s+([a-zA-Z].*?[&quot;'])\s*\n*\s*>\s*\n*\s*" flags="gi" replace="&lt;@{tag} \1>">
+			<replaceregexp match="\s*\r*\n*\r*\s*&lt;\s*\r*\n*\r*\s*@{tag}\s*\r*\n*\r*\s*/\s*\r*\n*\r*\s*>\s*\r*\n*\r*\s*" flags="gi" replace="&lt;@{tag}/>">
 				<fileset refid="@{fileSet}" />
 			</replaceregexp>
 
-			<replaceregexp match="\s*\n*\s*&lt;\s*\n*\s*@{tag}\s+([a-zA-Z].*?[&quot;'])\s*\n*\s*/\s*\n*\s*>\s*\n*\s*" flags="gi" replace="&lt;@{tag} \1/>">
+			<replaceregexp match="\s*\r*\n*\r*\s*&lt;/\s*\r*\n*\r*\s*@{tag}\s*\r*\n*\r*\s*>\s*\r*\n*\r*\s*" flags="gi" replace="&lt;/@{tag}>">
+				<fileset refid="@{fileSet}" />
+			</replaceregexp>
+
+			<replaceregexp match="\s*\r*\n*\r*\s*&lt;\s*\r*\n*\r*\s*@{tag}\s+([a-zA-Z].*?[&quot;'])\s*\r*\n*\r*\s*>\s*\r*\n*\r*\s*" flags="gi" replace="&lt;@{tag} \1>">
+				<fileset refid="@{fileSet}" />
+			</replaceregexp>
+
+			<replaceregexp match="\s*\r*\n*\r*\s*&lt;\s*\r*\n*\r*\s*@{tag}\s+([a-zA-Z].*?[&quot;'])\s*\r*\n*\r*\s*/\s*\r*\n*\r*\s*>\s*\r*\n*\r*\s*" flags="gi" replace="&lt;@{tag} \1/>">
 				<fileset refid="@{fileSet}" />
 			</replaceregexp>
 
@@ -148,7 +148,13 @@
 
 			<fileset id="@{toDir}.css.fileSet" dir="@{toDir}/css/" includes="**/*.css" />
 
-			<removeDoubleSpaces fileSet="@{toDir}.css.fileSet" />
+
+			<replaceregexp match="\s+" replace=" " flags="gi" byline="true">
+				<fileset refid="@{toDir}.css.fileSet" />
+			</replaceregexp>
+			<replaceregexp match="\s*\r*\n*\r*\s*" replace="" flags="gi" byline="false">
+				<fileset refid="@{toDir}.css.fileSet" />
+			</replaceregexp>
 
 			<replaceregexp match="/\*.*?\*/" replace="" flags="g" byline="false">
 				<fileset refid="@{toDir}.css.fileSet" />
@@ -160,11 +166,17 @@
 			<removeSpacesAround string="\;" replace=";" fileSet="@{toDir}.css.fileSet" />
 			<removeSpacesAround string="\." replace="." fileSet="@{toDir}.css.fileSet" />
 
-
 			<!-- make the jsps smaller based on an extremely crude heuristic -->
 
 			<fileset id="@{toDir}.html.fileSet" dir="@{toDir}/" includes="**/*.html" />
-			<removeDoubleSpaces fileSet="@{toDir}.html.fileSet" />
+
+			<replaceregexp match="\s+" replace=" " flags="gi" byline="true">
+				<fileset refid="@{toDir}.html.fileSet" />
+			</replaceregexp>
+			<replaceregexp match="\s*\r*\n+\r*\s*" replace=" " flags="gi" byline="false">
+				<fileset refid="@{toDir}.html.fileSet" />
+			</replaceregexp>
+
 			<cleanHTMLBlockTag tag="meta" fileSet="@{toDir}.html.fileSet" />
 			<cleanHTMLBlockTag tag="noscript" fileSet="@{toDir}.html.fileSet" />
 			<cleanHTMLBlockTag tag="html" fileSet="@{toDir}.html.fileSet" />
@@ -199,10 +211,21 @@
 			<cleanHTMLBlockTag tag="hr" fileSet="@{toDir}.html.fileSet" />
 			<cleanHTMLBlockTag tag="select" fileSet="@{toDir}.html.fileSet" />
 
+			<replaceregexp match="\s*\r*\n*\r*\s*&lt;!DOCTYPE\s*\r*\n*\r*" replace="&lt;!DOCTYPE " flags="gi" byline="false">
+				<fileset refid="@{toDir}.html.fileSet" />
+			</replaceregexp>
+			<replaceregexp match="\s*\r*\n*\r*\s*&lt;html" replace="&lt;html" flags="gi" byline="false">
+				<fileset refid="@{toDir}.html.fileSet" />
+			</replaceregexp>
+			<replaceregexp match="html>\s*\r*\n*\r*\s*" replace="html>" flags="gi" byline="false">
+				<fileset refid="@{toDir}.html.fileSet" />
+			</replaceregexp>
+
 			<echo message="Finished minifying HTML and CSS from '@{fromDir}' to '@{toDir}'." />
 		</sequential>
 	</macrodef>
 
+	<!-- taken from http://stackoverflow.com/questions/1123151 -->
 	<macrodef name="commit" description="Copy files only if different; remove files that do not exist in dir. This works similiar to robocopy /MIR.">
 		<attribute name="fromDir" />
 		<attribute name="toDir" />
@@ -211,25 +234,25 @@
 			<echo message="Committing website from '@{fromDir}' to '@{toDir}'." />
 			<copy overwrite="true" toDir="@{toDir}">
 				<fileset dir="@{fromDir}">
-					<different targetdir="${toDir}" />
+					<different targetdir="@{toDir}" />
 				</fileset>
 			</copy>
 			<echo message="Committing resources from '@{resourcesDir}' to '@{toDir}'." />
 			<copy overwrite="true" toDir="@{toDir}">
 				<fileset dir="@{resourcesDir}">
-					<different targetdir="${toDir}" />
+					<different targetdir="@{toDir}" />
 				</fileset>
 			</copy>
-			<!--
+
 			<echo message="Deleting unused files in '@{toDir}'." />
 			<delete includeemptydirs="true">
 				<fileset dir="@{toDir}">
 					<and>
-						<present targetdir="${fromDir}" present="srconly" />
-						<present targetdir="${resourcesDir}" present="srconly" />
+						<present targetdir="@{fromDir}" present="srconly" />
+						<present targetdir="@{resourcesDir}" present="srconly" />
 					</and>
 				</fileset>
-			</delete>-->
+			</delete>
 			<echo message="Finished committing website from '@{fromDir}' to '@{toDir}'." />
 		</sequential>
 	</macrodef>
@@ -239,11 +262,11 @@
 		<sequential>
 			<clean />
 			<websiteBuilder-build />
-			<assemble fromDir="${websiteSource}" toDir="${websiteTemp}/stage_1" />
-			<minify fromDir="${websiteTemp}/stage_1" toDir="${websiteTemp}/stage_2" />
-			<!-- <websiteBuilder-exec fromDir="${websiteTemp}/stage_2" toDir="${websiteTemp}/stage_3" />
-			<minify fromDir="${websiteTemp}/stage_3" toDir="${websiteTemp}/stage_4" /> -->
-			<commit fromDir="${websiteTemp}/stage_2" toDir="${websiteDest}" resourcesDir="${websiteSource}/resources" />
+			<assemble fromDir="${builder.websiteSourceDir}" toDir="${builder.websiteTempDir}/stage_1" />
+			<minify fromDir="${builder.websiteTempDir}/stage_1" toDir="${builder.websiteTempDir}/stage_2" />
+			<websiteBuilder-exec fromDir="${builder.websiteTempDir}/stage_2" toDir="${builder.websiteTempDir}/stage_3" />
+			<minify fromDir="${builder.websiteTempDir}/stage_3" toDir="${builder.websiteTempDir}/stage_4" /> 
+			<commit fromDir="${builder.websiteTempDir}/stage_4" toDir="${builder.websiteDestDir}" resourcesDir="${builder.websiteResourcesDir}" />
 			<clean />
 		</sequential>
 	</target>
