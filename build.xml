@@ -214,6 +214,7 @@
 			<cleanHTMLBlockTag tag="br" fileSet="@{toDir}.html.fileSet" />
 			<cleanHTMLBlockTag tag="hr" fileSet="@{toDir}.html.fileSet" />
 			<cleanHTMLBlockTag tag="select" fileSet="@{toDir}.html.fileSet" />
+      <cleanHTMLBlockTag tag="pre" fileSet="@{toDir}.html.fileSet" />
 
 			<replaceregexp match="\s*\r*\n*\r*\s*&lt;!DOCTYPE\s*\r*\n*\r*" replace="&lt;!DOCTYPE " flags="gi" byline="false">
 				<fileset refid="@{toDir}.html.fileSet" />
