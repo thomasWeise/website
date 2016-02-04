@@ -62,7 +62,7 @@ public class FileVisitor extends SimpleFileVisitor<Path> {
         if (attrs.size() > 0L) {
           Files.createDirectories(dest.getParent());
 
-          FileProcessor.processFile(file, dest, attrs, this.m_logger);
+          FileProcessor.processFile(file, dest, this.m_source, attrs, this.m_logger);
 
           if ((this.m_logger != null)
               && (this.m_logger.isLoggable(Level.INFO))) {

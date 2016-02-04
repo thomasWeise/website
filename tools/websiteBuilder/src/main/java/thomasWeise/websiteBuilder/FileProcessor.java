@@ -25,6 +25,8 @@ public class FileProcessor {
    *          the source path
    * @param dest
    *          the dest path
+   * @param base
+   *          the base path
    * @param logger
    *          the logger
    * @param attrs
@@ -33,11 +35,42 @@ public class FileProcessor {
    *           if i/o fails
    */
   public static final void processFile(final Path source, final Path dest,
-      BasicFileAttributes attrs, final Logger logger) throws IOException {
-    int size, read, current;
-    char[] data, actual;
+      final Path base, BasicFileAttributes attrs, final Logger logger)
+          throws IOException {
+    final StringBuilder data;
 
-    try (final InputStream is = PathUtils.openInputStream(source)) {
+    data = load(source, attrs);
+    
+    if("html".equalsIgnoreCase(PathUtils.getFileExtension(source))){ //$NON-NLS-1$
+      HTML.processHTML(source, base, data);
+    }
+    
+    store(data, dest);
+  }
+  
+  
+ 
+  
+
+  
+  /**
+   * Loads the contents of a given path.
+   * 
+   * @param path
+   *          the path
+   * @return the loaded contents
+   * @param attrs
+   *          the file attribute
+   * @throws IOException
+   *           if i/o fails
+   */
+  public static final StringBuilder load(final Path path,
+      final BasicFileAttributes attrs) throws IOException {
+    final char[] data;
+    final StringBuilder sb;
+    int size, read, current;
+
+    try (final InputStream is = PathUtils.openInputStream(path)) {
       try (final InputStreamReader fr = new InputStreamReader(is)) {
         size = ((int) (attrs.size()));
         data = new char[size << 1];
@@ -46,15 +79,15 @@ public class FileProcessor {
         while ((current = fr.read(data, read, data.length - read)) >= 0) {
           read += current;
         }
-        if (read > size) {
-          throw new IOException("File size of '" + source + "' corrupt."); //$NON-NLS-1$ //$NON-NLS-2$
-        }
-        actual = new char[read];
-        System.arraycopy(data, 0, actual, 0, read);
-        data = null;
-        processData(actual, dest, logger);
       }
     }
+
+    if ((read <= 0) || (read > size)) {
+      throw new IOException("File size of '" + path + "' corrupt."); //$NON-NLS-1$ //$NON-NLS-2$
+    }
+    sb = new StringBuilder(read);
+    sb.append(data);
+    return sb;
   }
 
   /**
@@ -64,14 +97,15 @@ public class FileProcessor {
    *          the data
    * @param dest
    *          the dest path
-   * @param logger
-   *          the logger
    * @throws IOException
    *           if i/o fails
    */
-  public static final void processData(final char[] data, final Path dest,
-      final Logger logger) throws IOException {
+  public static final void store(final CharSequence data, final Path dest)
+      throws IOException {
     final ITextOutput to;
+    final int length;
+    char ch;
+    int i;
 
     try (final OutputStream os = PathUtils.openOutputStream(dest)) {
       try (final OutputStreamWriter osw = new OutputStreamWriter(os,
@@ -80,7 +114,10 @@ public class FileProcessor {
           to = XMLCharTransformer.getInstance()
               .transform(AbstractTextOutput.wrap(bw));
 
-          for (char ch : data) {
+          length = data.length();
+
+          for (i = 0; i < length; i++) {
+            ch = data.charAt(i);
             if (ch <= 'z') {
               bw.write(ch);
             } else {

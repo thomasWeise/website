@@ -68,8 +68,8 @@
 				<filelist dir="@{fromDir}/css/print/base/" files="normalize.css,baseLayout.css" />
 				<fileset dir="@{fromDir}/css/print/extension" includes="*.css" />
 			</concat>
-			
-			<loadfile property="menu" srcFile="${builder.websiteIncludesDir}/menu.html"/>
+
+			<loadfile property="menu" srcFile="${builder.websiteIncludesDir}/menu.html" />
 
 			<copy todir="@{toDir}">
 				<fileset dir="@{fromDir}/html">
@@ -152,7 +152,7 @@
 			<replaceregexp match="\s+" replace=" " flags="gi" byline="true">
 				<fileset refid="@{toDir}.css.fileSet" />
 			</replaceregexp>
-			<replaceregexp match="\s*\r*\n*\r*\s*" replace="" flags="gi" byline="false">
+			<replaceregexp match="\s*\r*\n+\r*\s*" replace="" flags="gi" byline="false">
 				<fileset refid="@{toDir}.css.fileSet" />
 			</replaceregexp>
 
@@ -165,6 +165,9 @@
 			<removeSpacesAround string="\," replace="," fileSet="@{toDir}.css.fileSet" />
 			<removeSpacesAround string="\;" replace=";" fileSet="@{toDir}.css.fileSet" />
 			<removeSpacesAround string="\." replace="." fileSet="@{toDir}.css.fileSet" />
+			<removeSpacesAround string="\:" replace=":" fileSet="@{toDir}.css.fileSet" />
+			<removeSpacesAround string="\&quot;" replace="&quot;" fileSet="@{toDir}.css.fileSet" />
+			<removeSpacesAround string="\'" replace="'" fileSet="@{toDir}.css.fileSet" />
 
 			<!-- make the jsps smaller based on an extremely crude heuristic -->
 
@@ -184,6 +187,7 @@
 			<cleanHTMLBlockTag tag="title" fileSet="@{toDir}.html.fileSet" />
 			<cleanHTMLBlockTag tag="link" fileSet="@{toDir}.html.fileSet" />
 			<cleanHTMLBlockTag tag="script" fileSet="@{toDir}.html.fileSet" />
+      <cleanHTMLBlockTag tag="base" fileSet="@{toDir}.html.fileSet" />
 			<cleanHTMLBlockTag tag="body" fileSet="@{toDir}.html.fileSet" />
 			<cleanHTMLBlockTag tag="h1" fileSet="@{toDir}.html.fileSet" />
 			<cleanHTMLBlockTag tag="h2" fileSet="@{toDir}.html.fileSet" />
@@ -251,6 +255,7 @@
 						<present targetdir="@{fromDir}" present="srconly" />
 						<present targetdir="@{resourcesDir}" present="srconly" />
 					</and>
+					<exclude name="/css" />
 				</fileset>
 			</delete>
 			<echo message="Finished committing website from '@{fromDir}' to '@{toDir}'." />
@@ -265,7 +270,7 @@
 			<assemble fromDir="${builder.websiteSourceDir}" toDir="${builder.websiteTempDir}/stage_1" />
 			<minify fromDir="${builder.websiteTempDir}/stage_1" toDir="${builder.websiteTempDir}/stage_2" />
 			<websiteBuilder-exec fromDir="${builder.websiteTempDir}/stage_2" toDir="${builder.websiteTempDir}/stage_3" />
-			<minify fromDir="${builder.websiteTempDir}/stage_3" toDir="${builder.websiteTempDir}/stage_4" /> 
+			<minify fromDir="${builder.websiteTempDir}/stage_3" toDir="${builder.websiteTempDir}/stage_4" />
 			<commit fromDir="${builder.websiteTempDir}/stage_4" toDir="${builder.websiteDestDir}" resourcesDir="${builder.websiteResourcesDir}" />
 			<clean />
 		</sequential>
