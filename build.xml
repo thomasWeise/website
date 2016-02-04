@@ -1,0 +1,53 @@
+<project name="website" basedir="." default="build">
+	<description>
+	Build the website.
+	</description>
+
+	<property name="website" location="website" />
+	<property name="tools" location="tools" />
+	<property name="websiteBuilder" location="${tools}/websiteBuilder" />
+	<property name="websiteBuilderTarget" location="${websiteBuilder}/target" />
+	<property name="websiteSource" location="${website}/source" />
+	<property name="websiteDest" location="${website}/build" />
+	<property name="websiteTemp" location="${website}/temp" />
+
+
+
+
+	<target name="build">
+		<sequential>
+
+			<echo message="Begin cleaning up old files and folders." />
+			<delete dir="${websiteBuilderTarget}" />
+			<delete dir="${websiteBuilder}/bin" />
+			<delete dir="${websiteTemp}" />
+			<echo message="Finished cleaning up old files and folders." />
+
+			<echo message="Begin building the websiteBuilder project." />
+			<subant target="build">
+				<fileset dir="${websiteBuilder}" includes="build.xml" />
+			</subant>
+			<echo message="Finished building the websiteBuilder project." />
+
+			<echo message="Beginning to build the intermediate website." />
+			<mkdir dir="${websiteTemp}" />
+			<java jar="${websiteBuilderTarget}/websiteBuilder-0.8.5-SNAPSHOT-full.jar" failonerror="true">
+				<arg value="source=${websiteSource}" />
+				<arg value="dest=${websiteTemp}" />
+			</java>
+			<echo message="Finished building the intermediate website." />
+
+
+			<echo message="Now synchronizing intermediate website files with website." />
+			<sync todir="${websiteDest}">
+				<fileset dir="${websiteTemp}" />
+			</sync>
+			<echo message="Done synchronizing intermediate website files with website." />
+
+			<echo message="Cleaning up intermediate files.">
+				<delete dir="${websiteTemp}" />
+			</echo>
+
+		</sequential>
+	</target>
+</project>
