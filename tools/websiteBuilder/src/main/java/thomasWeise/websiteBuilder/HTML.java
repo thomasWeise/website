@@ -25,29 +25,29 @@ public class HTML {
     parent = source.getParent();
     HTML.__resolveURLs(parent, base, data);
     HTML.__resolveLinks(parent, base, data);
-    __replace(data);
+    HTML.__replace(data);
   }
 
   /**
    * Perform default replacements.
-   * 
+   *
    * @param data
    *          the data
    */
   private static final void __replace(final StringBuilder data) {
-    __replace(data, "<dquote> ", "<dquote> "); //$NON-NLS-1$//$NON-NLS-2$
-    __replace(data, " </dquote> ", "</dquote> "); //$NON-NLS-1$//$NON-NLS-2$
-    __replace(data, "<dquote>", "&ldquo;"); //$NON-NLS-1$//$NON-NLS-2$
-    __replace(data, "</dquote>", "&rdquo;");//$NON-NLS-1$//$NON-NLS-2$
-    __replace(data, "<squote> ", "<squote>"); //$NON-NLS-1$//$NON-NLS-2$
-    __replace(data, " </squote>", "</squote>"); //$NON-NLS-1$//$NON-NLS-2$
-    __replace(data, "<squote>", "&lsquo;"); //$NON-NLS-1$//$NON-NLS-2$
-    __replace(data, "</squote>", "&rsquo;");//$NON-NLS-1$//$NON-NLS-2$
+    HTML.__replace(data, "<dquote> ", "<dquote> "); //$NON-NLS-1$//$NON-NLS-2$
+    HTML.__replace(data, " </dquote> ", "</dquote> "); //$NON-NLS-1$//$NON-NLS-2$
+    HTML.__replace(data, "<dquote>", "&ldquo;"); //$NON-NLS-1$//$NON-NLS-2$
+    HTML.__replace(data, "</dquote>", "&rdquo;");//$NON-NLS-1$//$NON-NLS-2$
+    HTML.__replace(data, "<squote> ", "<squote>"); //$NON-NLS-1$//$NON-NLS-2$
+    HTML.__replace(data, " </squote>", "</squote>"); //$NON-NLS-1$//$NON-NLS-2$
+    HTML.__replace(data, "<squote>", "&lsquo;"); //$NON-NLS-1$//$NON-NLS-2$
+    HTML.__replace(data, "</squote>", "&rsquo;");//$NON-NLS-1$//$NON-NLS-2$
   }
 
   /**
    * Perform default replacements.
-   * 
+   *
    * @param src
    *          the string to be replaced
    * @param repl

@@ -36,12 +36,13 @@ It prescribes the following folder structure:
 
 The following functionality is provided by building the website:
 
-1. All non-ASCII characters (Chinese, German Umlauts) are translated to HTML entities in both `css` and `html`.
-2. Properties from `website.properties` are automatically resolved in all HTML files.
-3. `{{url}}` resolves relative and absolute Urls towards the website base URL.
-4. `[[url]title]` generates links inside the website. If `url` is not a `html` file, an icon of the corresponding file type (from `resources/icons`) will be added.
-5. `<dquote>xxx</dquote>` will resolve to double-quoted `xxx`
-6. `<squote>xxx</squote>` will resolve to single-quoted `xxx`
+1. Both `html` and `css` are rigorously minified.
+2. All non-ASCII characters (Chinese, German Umlauts) are translated to HTML entities in both `css` and `html`.
+3. Properties from `website.properties` are automatically resolved in all HTML files.
+4. `{{url}}` resolves relative and absolute Urls towards the website base URL.
+5. `[[url]title]` generates links inside the website. If `url` is not a `html` file, an icon of the corresponding file type (from `resources/icons`) will be added.
+6. `<dquote>xxx</dquote>` will resolve to double-quoted `xxx`
+7. `<squote>xxx</squote>` will resolve to single-quoted `xxx`
 
 ## How to Use
 Generate the above file structure.
