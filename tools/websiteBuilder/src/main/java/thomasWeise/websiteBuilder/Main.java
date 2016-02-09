@@ -77,7 +77,8 @@ public class Main {
           "' to dest '" + dest + '\'' + '.');//$NON-NLS-1$
     }
 
-    Files.walkFileTree(source, new FileVisitor(source, dest, logger));
+    Files.walkFileTree(source,
+        new FileVisitor(new Context(logger, source, dest)));
 
     if ((logger != null) && (logger.isLoggable(Level.INFO))) {
       logger.info("Finished building website.");//$NON-NLS-1$

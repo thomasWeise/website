@@ -57,27 +57,23 @@
 			<echo message="Begin assembling HTML and CSS from '@{fromDir}' to '@{toDir}'." />
 			<mkdir dir="@{toDir}" />
 
-			<concat destfile="@{toDir}/css/screen.css" force="no">
-				<!-- normalize.css should come first -->
-				<filelist dir="@{fromDir}/css/screen/base/" files="normalize.css,baseLayout.css" />
-				<fileset dir="@{fromDir}/css/screen/extension" includes="*.css" />
-			</concat>
-
-			<concat destfile="@{toDir}/css/print.css" force="no">
-				<!-- normalize.css should come first -->
-				<filelist dir="@{fromDir}/css/print/base/" files="normalize.css,baseLayout.css" />
-				<fileset dir="@{fromDir}/css/print/extension" includes="*.css" />
-			</concat>
-
-			<loadfile property="menu" srcFile="${builder.websiteIncludesDir}/menu.html" />
+			<copy todir="@{toDir}/css">
+				<fileset dir="@{fromDir}/css">
+					<include name="**/*.css" />
+					<include name="**/*.inc-css" />
+				</fileset>
+        <filterchain>
+          <expandproperties />
+          <expandproperties />
+        </filterchain>
+			</copy>
 
 			<copy todir="@{toDir}">
 				<fileset dir="@{fromDir}/html">
 					<include name="**/*.html" />
+					<include name="**/*.inc-html" />
 				</fileset>
 				<filterchain>
-					<concatfilter prepend="${builder.websiteIncludesDir}/header.html" />
-					<concatfilter append="${builder.websiteIncludesDir}/footer.html" />
 					<expandproperties />
 					<expandproperties />
 				</filterchain>
@@ -146,7 +142,7 @@
 
 			<!-- make the css smaller -->
 
-			<fileset id="@{toDir}.css.fileSet" dir="@{toDir}/css/" includes="**/*.css" />
+			<fileset id="@{toDir}.css.fileSet" dir="@{toDir}/css/" includes="**/*.css,**/*.inc-css" />
 
 
 			<replaceregexp match="\s+" replace=" " flags="gi" byline="true">
@@ -171,7 +167,7 @@
 
 			<!-- make the jsps smaller based on an extremely crude heuristic -->
 
-			<fileset id="@{toDir}.html.fileSet" dir="@{toDir}/" includes="**/*.html" />
+			<fileset id="@{toDir}.html.fileSet" dir="@{toDir}/" includes="**/*.html,**/*.inc-html" />
 
 			<replaceregexp match="\s+" replace=" " flags="gi" byline="true">
 				<fileset refid="@{toDir}.html.fileSet" />
@@ -187,7 +183,7 @@
 			<cleanHTMLBlockTag tag="title" fileSet="@{toDir}.html.fileSet" />
 			<cleanHTMLBlockTag tag="link" fileSet="@{toDir}.html.fileSet" />
 			<cleanHTMLBlockTag tag="script" fileSet="@{toDir}.html.fileSet" />
-      <cleanHTMLBlockTag tag="base" fileSet="@{toDir}.html.fileSet" />
+			<cleanHTMLBlockTag tag="base" fileSet="@{toDir}.html.fileSet" />
 			<cleanHTMLBlockTag tag="body" fileSet="@{toDir}.html.fileSet" />
 			<cleanHTMLBlockTag tag="h1" fileSet="@{toDir}.html.fileSet" />
 			<cleanHTMLBlockTag tag="h2" fileSet="@{toDir}.html.fileSet" />
@@ -214,7 +210,7 @@
 			<cleanHTMLBlockTag tag="br" fileSet="@{toDir}.html.fileSet" />
 			<cleanHTMLBlockTag tag="hr" fileSet="@{toDir}.html.fileSet" />
 			<cleanHTMLBlockTag tag="select" fileSet="@{toDir}.html.fileSet" />
-      <cleanHTMLBlockTag tag="pre" fileSet="@{toDir}.html.fileSet" />
+			<cleanHTMLBlockTag tag="pre" fileSet="@{toDir}.html.fileSet" />
 
 			<replaceregexp match="\s*\r*\n*\r*\s*&lt;!DOCTYPE\s*\r*\n*\r*" replace="&lt;!DOCTYPE " flags="gi" byline="false">
 				<fileset refid="@{toDir}.html.fileSet" />

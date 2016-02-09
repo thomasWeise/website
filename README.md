@@ -2,7 +2,7 @@
 This repository holds the utilities and tools I use to build my (new) website.
 They are really light-weight and designed to generate very compact and quickly-loading pages
 
-## Directory Structure
+## 1. Directory Structure
 It prescribes the following folder structure:
 
 - `tools`: The tools for building the site, included in the project.
@@ -10,40 +10,30 @@ It prescribes the following folder structure:
   * `source`: the sources
     + `website.properties`: properties which are resolved in all HTML files via `${propertyName}`
     + `css`: the style sheets
-      - `print`: the style sheets for print layout
-        * `base`
-          + `normalize.css`: a style sheet to normalize the layout of basic elements over browsers 
-          + `baseLayout.css`: the theme base layout
-        * `extensions`
-          + ...`.css`: additional style sheets
-      - `screen`: the style sheets for screen layout
-        * `base`
-          + `normalize.css`: a style sheet to normalize the layout of basic elements over browsers 
-          + `baseLayout.css`: the theme base layout
-        * `extensions`
-          + ...`.css`: additional style sheets
-    + `html`: The HTML files.
-    + `include`: Files includes into the generated pages
-      - `header.html`: the common header
-      - `footer.html`: the common footer
-      - `menu.html`: the menu
+    + `html`: the HTML files
     + `resources`: Same folder structure as `html`, contains all static resources such as images or icons.
       - `icons`: 20pxx20px `png` icons for file types
   * `build`: The generated website
 
 
-## Functionality
+## 2. Functionality
 
 The following functionality is provided by building the website:
 
 1. Both `html` and `css` are rigorously minified.
-2. All non-ASCII characters (Chinese, German Umlauts) are translated to HTML entities in both `css` and `html`.
+2. All non-ASCII characters (Chinese, German Umlauts) are translated to HTML entities in `html` files.
 3. Properties from `website.properties` are automatically resolved in all HTML files.
-4. `{{url}}` resolves relative and absolute Urls towards the website base URL.
-5. `[[url]title]` generates links inside the website. If `url` is not a `html` file, an icon of the corresponding file type (from `resources/icons`) will be added.
-6. `<dquote>xxx</dquote>` will resolve to double-quoted `xxx`
-7. `<squote>xxx</squote>` will resolve to single-quoted `xxx`
+4. `{{url}}` resolves relative and absolute URLs towards the URL of the current element. Absolute URLs start with `/`.
+5. `[[url]title]` generates links inside the website and resolves URLs. If `url` is not a `html` file, an icon of the corresponding file type (from `resources/icons`) will be added. Absolute URLs start with `/`.
+6. ``<<path>>`` includes the fragment identified by `path`. If used inside an `html` file, this will look for a fragment with suffix `inc-html`. If used inside a `css` file, this will look for a fragment with suffix `inc-css`. All the rules in this enumeration are also recursively applied to the fragments.
+6. `<dquote>xxx</dquote>` will resolve to double-quoted `xxx` in `html` files.
+7. `<squote>xxx</squote>` will resolve to single-quoted `xxx` in `html` files.
 
-## How to Use
+## 3. How to Use
 Generate the above file structure.
-The run `build.xml` as `Ant` build (requires Ant 1.9.4 and Maven 3.3.3)
+The run `build.xml` as `Ant` build.
+
+## 4. Requirements
+
+* [Apache `Ant`](http://ant.apache.org/bindownload.cgi) 1.9.4 or later
+* [Maven](http://maven.apache.org/) version 3.0 and above
