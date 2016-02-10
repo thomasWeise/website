@@ -262,8 +262,8 @@ public class HTML {
                           fragment.context.sourceBase.resolve(//
                               "icons/" + extension + ".png"))//$NON-NLS-1$ //$NON-NLS-2$
                       .toString()
-                  + "\" class=\"icon" //$NON-NLS-1$
-                  + "\" />&nbsp;"; //$NON-NLS-1$
+                  + "\" class=\"icon\" alt=\"" //$NON-NLS-1$
+                  + extension + " icon\" />&nbsp;"; //$NON-NLS-1$
             }
 
             replace += title + "</a>"; //$NON-NLS-1$

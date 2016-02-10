@@ -12,7 +12,7 @@ It prescribes the following folder structure:
     + `css`: the style sheets
     + `html`: the HTML files
     + `resources`: Same folder structure as `html`, contains all static resources such as images or icons.
-      - `icons`: 20pxx20px `png` icons for file types
+      - `icons`: 20pxx20px `png` icons for file types. You can take these from [my icons project](http://www.github.com/thomasWeise/icons) on GitHub.
   * `build`: The generated website
 
 
@@ -30,8 +30,8 @@ The following functionality is provided by building the website:
 7. `<squote>xxx</squote>` will resolve to single-quoted `xxx` in `html` files.
 
 ## 3. How to Use
-Generate the above file structure.
-The run `build.xml` as `Ant` build.
+Generate the above file structure (under the `website` folder, the `tools` folder is already there). Then run `build.xml` as `Ant` build. This will first build the website builder tool, then build the website.
+
 
 ## 4. Requirements
 

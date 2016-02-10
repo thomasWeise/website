@@ -3,6 +3,7 @@
 	Build the builder.websiteDir.
 	</description>
 
+	<!-- First we define the basic directory structure. -->
 	<property name="builder.websiteDir" location="website" />
 	<property name="builder.toolsDir" location="tools" />
 	<property name="builder.websiteBuilderDir" location="${builder.toolsDir}/websiteBuilder" />
@@ -13,8 +14,10 @@
 	<property name="builder.websiteDestDir" location="${builder.websiteDir}/build" />
 	<property name="builder.websiteTempDir" location="${builder.websiteDir}/temp" />
 
+	<!-- These properties are available for expansion during the assembly step. -->
 	<property file="${builder.websiteDir}/website.properties" />
 
+	<!-- Clean all intermediate and temporary files. -->
 	<macrodef name="clean" description="Clean the intermediate files.">
 		<sequential>
 			<echo message="Begin cleaning up old files and folders." />
@@ -25,6 +28,12 @@
 		</sequential>
 	</macrodef>
 
+	<!-- The website builder is a program which performs various tasks, such as 
+	     resolution of include files, resolving of relative URLs, parsing of some
+	     auxilliary tags, etc. Here we first build this tool from its Java sources.
+	     For building, we use the optimizationBenchmarking utility build script
+	     which downloads the latest versions of all required projects from GitHub
+	     and builds them first, then builds the website builder.-->
 	<macrodef name="websiteBuilder-build" description="Build the website builder.">
 		<sequential>
 			<echo message="Begin building the websiteBuilder project." />
@@ -35,6 +44,7 @@
 		</sequential>
 	</macrodef>
 
+	<!-- With this macro, we apply the website builder tool that we build above. -->
 	<macrodef name="websiteBuilder-exec" description="Execute the builder.websiteDir builder.">
 		<attribute name="fromDir" />
 		<attribute name="toDir" />
@@ -49,7 +59,8 @@
 		</sequential>
 	</macrodef>
 
-
+	<!-- This first assembly step copies all HTML and CSS source files and
+    expands the properties inside them. -->
 	<macrodef name="assemble" description="Assemble HTML and CSS.">
 		<attribute name="fromDir" />
 		<attribute name="toDir" />
@@ -62,10 +73,10 @@
 					<include name="**/*.css" />
 					<include name="**/*.inc-css" />
 				</fileset>
-        <filterchain>
-          <expandproperties />
-          <expandproperties />
-        </filterchain>
+				<filterchain>
+					<expandproperties />
+					<expandproperties />
+				</filterchain>
 			</copy>
 
 			<copy todir="@{toDir}">
@@ -83,7 +94,7 @@
 		</sequential>
 	</macrodef>
 
-
+	<!-- We now come at various macros used for minification of HTML and CSS. -->
 	<macrodef name="removeSpacesAround" description="Remove all white space around a given string.">
 		<attribute name="fileSet" />
 		<attribute name="string" />
@@ -99,6 +110,38 @@
 	</macrodef>
 
 
+	<!-- Clean an arbitrary HTML tag: remove useless spaces inside the tag, such that
+      '< span style="bla" />' becomes '<span style="bal"/>'. -->
+	<macrodef name="cleanHTMLTag" description="Clean a normal tag.">
+		<attribute name="tag" />
+		<attribute name="fileSet" />
+		<sequential>
+
+			<replaceregexp match="&lt;\s*\r*\n*\r*\s*@{tag}\s*\r*\n*\r*\s*>" flags="gi" replace="&lt;@{tag}>">
+				<fileset refid="@{fileSet}" />
+			</replaceregexp>
+
+			<replaceregexp match="&lt;\s*\r*\n*\r*\s*@{tag}\s*\r*\n*\r*\s*/\s*\r*\n*\r*\s*>" flags="gi" replace="&lt;@{tag}/>">
+				<fileset refid="@{fileSet}" />
+			</replaceregexp>
+
+			<replaceregexp match="&lt;/\s*\r*\n*\r*\s*@{tag}\s*\r*\n*\r*\s*>" flags="gi" replace="&lt;/@{tag}>">
+				<fileset refid="@{fileSet}" />
+			</replaceregexp>
+
+			<replaceregexp match="&lt;\s*\r*\n*\r*\s*@{tag}\s+([a-zA-Z].*?[&quot;'])\s*\r*\n*\r*\s*>" flags="gi" replace="&lt;@{tag} \1>">
+				<fileset refid="@{fileSet}" />
+			</replaceregexp>
+
+			<replaceregexp match="&lt;\s*\r*\n*\r*\s*@{tag}\s+([a-zA-Z].*?[&quot;'])\s*\r*\n*\r*\s*/\s*\r*\n*\r*\s*>" flags="gi" replace="&lt;@{tag} \1/>">
+				<fileset refid="@{fileSet}" />
+			</replaceregexp>
+
+		</sequential>
+	</macrodef>
+
+	<!-- Clean a block tag: here we can be more aggressive, as spaces surrounding a block tag
+	     are superfluous. -->
 	<macrodef name="cleanHTMLBlockTag" description="Clean a block tag.">
 		<attribute name="tag" />
 		<attribute name="fileSet" />
@@ -127,107 +170,162 @@
 		</sequential>
 	</macrodef>
 
-
-	<macrodef name="minify" description="Minify html and css.">
-		<attribute name="fromDir" />
-		<attribute name="toDir" />
+	<!-- Clean all HTML tags. -->
+	<macrodef name="cleanHTML" description="Clean a HTML file set.">
+		<attribute name="fileSet" />
 		<sequential>
-			<echo message="Minifying HTML and CSS from '@{fromDir}' to '@{toDir}'." />
-			<mkdir dir="@{toDir}" />
-
-			<!-- Make sure that the CSS and HTML files are moved to the destination folder. -->
-			<copy todir="@{toDir}" unless:true="@{merge}">
-				<fileset dir="@{fromDir}" />
-			</copy>
-
-			<!-- make the css smaller -->
-
-			<fileset id="@{toDir}.css.fileSet" dir="@{toDir}/css/" includes="**/*.css,**/*.inc-css" />
-
 
 			<replaceregexp match="\s+" replace=" " flags="gi" byline="true">
-				<fileset refid="@{toDir}.css.fileSet" />
-			</replaceregexp>
-			<replaceregexp match="\s*\r*\n+\r*\s*" replace="" flags="gi" byline="false">
-				<fileset refid="@{toDir}.css.fileSet" />
-			</replaceregexp>
-
-			<replaceregexp match="/\*.*?\*/" replace="" flags="g" byline="false">
-				<fileset refid="@{toDir}.css.fileSet" />
-			</replaceregexp>
-
-			<removeSpacesAround string="\{" replace="{" fileSet="@{toDir}.css.fileSet" />
-			<removeSpacesAround string="\}" replace="}" fileSet="@{toDir}.css.fileSet" />
-			<removeSpacesAround string="\," replace="," fileSet="@{toDir}.css.fileSet" />
-			<removeSpacesAround string="\;" replace=";" fileSet="@{toDir}.css.fileSet" />
-			<removeSpacesAround string="\." replace="." fileSet="@{toDir}.css.fileSet" />
-			<removeSpacesAround string="\:" replace=":" fileSet="@{toDir}.css.fileSet" />
-			<removeSpacesAround string="\&quot;" replace="&quot;" fileSet="@{toDir}.css.fileSet" />
-			<removeSpacesAround string="\'" replace="'" fileSet="@{toDir}.css.fileSet" />
-
-			<!-- make the jsps smaller based on an extremely crude heuristic -->
-
-			<fileset id="@{toDir}.html.fileSet" dir="@{toDir}/" includes="**/*.html,**/*.inc-html" />
-
-			<replaceregexp match="\s+" replace=" " flags="gi" byline="true">
-				<fileset refid="@{toDir}.html.fileSet" />
+				<fileset refid="@{fileSet}" />
 			</replaceregexp>
 			<replaceregexp match="\s*\r*\n+\r*\s*" replace=" " flags="gi" byline="false">
-				<fileset refid="@{toDir}.html.fileSet" />
+				<fileset refid="@{fileSet}" />
 			</replaceregexp>
 
-			<cleanHTMLBlockTag tag="meta" fileSet="@{toDir}.html.fileSet" />
-			<cleanHTMLBlockTag tag="noscript" fileSet="@{toDir}.html.fileSet" />
-			<cleanHTMLBlockTag tag="html" fileSet="@{toDir}.html.fileSet" />
-			<cleanHTMLBlockTag tag="head" fileSet="@{toDir}.html.fileSet" />
-			<cleanHTMLBlockTag tag="title" fileSet="@{toDir}.html.fileSet" />
-			<cleanHTMLBlockTag tag="link" fileSet="@{toDir}.html.fileSet" />
-			<cleanHTMLBlockTag tag="script" fileSet="@{toDir}.html.fileSet" />
-			<cleanHTMLBlockTag tag="base" fileSet="@{toDir}.html.fileSet" />
-			<cleanHTMLBlockTag tag="body" fileSet="@{toDir}.html.fileSet" />
-			<cleanHTMLBlockTag tag="h1" fileSet="@{toDir}.html.fileSet" />
-			<cleanHTMLBlockTag tag="h2" fileSet="@{toDir}.html.fileSet" />
-			<cleanHTMLBlockTag tag="h3" fileSet="@{toDir}.html.fileSet" />
-			<cleanHTMLBlockTag tag="h4" fileSet="@{toDir}.html.fileSet" />
-			<cleanHTMLBlockTag tag="h5" fileSet="@{toDir}.html.fileSet" />
-			<cleanHTMLBlockTag tag="h6" fileSet="@{toDir}.html.fileSet" />
-			<cleanHTMLBlockTag tag="p" fileSet="@{toDir}.html.fileSet" />
-			<cleanHTMLBlockTag tag="ol" fileSet="@{toDir}.html.fileSet" />
-			<cleanHTMLBlockTag tag="ul" fileSet="@{toDir}.html.fileSet" />
-			<cleanHTMLBlockTag tag="li" fileSet="@{toDir}.html.fileSet" />
-			<cleanHTMLBlockTag tag="dl" fileSet="@{toDir}.html.fileSet" />
-			<cleanHTMLBlockTag tag="dd" fileSet="@{toDir}.html.fileSet" />
-			<cleanHTMLBlockTag tag="dt" fileSet="@{toDir}.html.fileSet" />
-			<cleanHTMLBlockTag tag="section" fileSet="@{toDir}.html.fileSet" />
-			<cleanHTMLBlockTag tag="header" fileSet="@{toDir}.html.fileSet" />
-			<cleanHTMLBlockTag tag="aside" fileSet="@{toDir}.html.fileSet" />
-			<cleanHTMLBlockTag tag="table" fileSet="@{toDir}.html.fileSet" />
-			<cleanHTMLBlockTag tag="tr" fileSet="@{toDir}.html.fileSet" />
-			<cleanHTMLBlockTag tag="th" fileSet="@{toDir}.html.fileSet" />
-			<cleanHTMLBlockTag tag="td" fileSet="@{toDir}.html.fileSet" />
-			<cleanHTMLBlockTag tag="form" fileSet="@{toDir}.html.fileSet" />
-			<cleanHTMLBlockTag tag="option" fileSet="@{toDir}.html.fileSet" />
-			<cleanHTMLBlockTag tag="br" fileSet="@{toDir}.html.fileSet" />
-			<cleanHTMLBlockTag tag="hr" fileSet="@{toDir}.html.fileSet" />
-			<cleanHTMLBlockTag tag="select" fileSet="@{toDir}.html.fileSet" />
-			<cleanHTMLBlockTag tag="pre" fileSet="@{toDir}.html.fileSet" />
+			<cleanHTMLBlockTag tag="meta" fileSet="@{fileSet}" />
+			<cleanHTMLBlockTag tag="noscript" fileSet="@{fileSet}" />
+			<cleanHTMLBlockTag tag="html" fileSet="@{fileSet}" />
+			<cleanHTMLBlockTag tag="head" fileSet="@{fileSet}" />
+			<cleanHTMLBlockTag tag="title" fileSet="@{fileSet}" />
+			<cleanHTMLBlockTag tag="link" fileSet="@{fileSet}" />
+			<cleanHTMLBlockTag tag="script" fileSet="@{fileSet}" />
+			<cleanHTMLBlockTag tag="base" fileSet="@{fileSet}" />
+			<cleanHTMLBlockTag tag="body" fileSet="@{fileSet}" />
+			<cleanHTMLBlockTag tag="h1" fileSet="@{fileSet}" />
+			<cleanHTMLBlockTag tag="h2" fileSet="@{fileSet}" />
+			<cleanHTMLBlockTag tag="h3" fileSet="@{fileSet}" />
+			<cleanHTMLBlockTag tag="h4" fileSet="@{fileSet}" />
+			<cleanHTMLBlockTag tag="h5" fileSet="@{fileSet}" />
+			<cleanHTMLBlockTag tag="h6" fileSet="@{fileSet}" />
+			<cleanHTMLBlockTag tag="p" fileSet="@{fileSet}" />
+			<cleanHTMLBlockTag tag="ol" fileSet="@{fileSet}" />
+			<cleanHTMLBlockTag tag="ul" fileSet="@{fileSet}" />
+			<cleanHTMLBlockTag tag="li" fileSet="@{fileSet}" />
+			<cleanHTMLBlockTag tag="dl" fileSet="@{fileSet}" />
+			<cleanHTMLBlockTag tag="dd" fileSet="@{fileSet}" />
+			<cleanHTMLBlockTag tag="dt" fileSet="@{fileSet}" />
+			<cleanHTMLBlockTag tag="section" fileSet="@{fileSet}" />
+			<cleanHTMLBlockTag tag="header" fileSet="@{fileSet}" />
+			<cleanHTMLBlockTag tag="aside" fileSet="@{fileSet}" />
+			<cleanHTMLBlockTag tag="table" fileSet="@{fileSet}" />
+			<cleanHTMLBlockTag tag="tr" fileSet="@{fileSet}" />
+			<cleanHTMLBlockTag tag="th" fileSet="@{fileSet}" />
+			<cleanHTMLBlockTag tag="td" fileSet="@{fileSet}" />
+			<cleanHTMLBlockTag tag="form" fileSet="@{fileSet}" />
+			<cleanHTMLBlockTag tag="option" fileSet="@{fileSet}" />
+			<cleanHTMLBlockTag tag="br" fileSet="@{fileSet}" />
+			<cleanHTMLBlockTag tag="hr" fileSet="@{fileSet}" />
+			<cleanHTMLBlockTag tag="select" fileSet="@{fileSet}" />
+			<cleanHTMLBlockTag tag="pre" fileSet="@{fileSet}" />
+
+			<cleanHTMLTag tag="span" fileSet="@{fileSet}" />
+			<cleanHTMLTag tag="img" fileSet="@{fileSet}" />
+			<cleanHTMLTag tag="em" fileSet="@{fileSet}" />
+			<cleanHTMLTag tag="a" fileSet="@{fileSet}" />
 
 			<replaceregexp match="\s*\r*\n*\r*\s*&lt;!DOCTYPE\s*\r*\n*\r*" replace="&lt;!DOCTYPE " flags="gi" byline="false">
-				<fileset refid="@{toDir}.html.fileSet" />
+				<fileset refid="@{fileSet}" />
 			</replaceregexp>
 			<replaceregexp match="\s*\r*\n*\r*\s*&lt;html" replace="&lt;html" flags="gi" byline="false">
-				<fileset refid="@{toDir}.html.fileSet" />
+				<fileset refid="@{fileSet}" />
 			</replaceregexp>
 			<replaceregexp match="html>\s*\r*\n*\r*\s*" replace="html>" flags="gi" byline="false">
-				<fileset refid="@{toDir}.html.fileSet" />
+				<fileset refid="@{fileSet}" />
 			</replaceregexp>
 
-			<echo message="Finished minifying HTML and CSS from '@{fromDir}' to '@{toDir}'." />
 		</sequential>
 	</macrodef>
 
-	<!-- taken from http://stackoverflow.com/questions/1123151 -->
+	<!-- Clean all CSS files. -->
+	<macrodef name="cleanCSS" description="Clean a CSS file set.">
+		<attribute name="fileSet" />
+		<sequential>
+			<replaceregexp match="\s+" replace=" " flags="gi" byline="true">
+				<fileset refid="@{fileSet}" />
+			</replaceregexp>
+			<replaceregexp match="\s*\r*\n+\r*\s*" replace="" flags="gi" byline="false">
+				<fileset refid="@{fileSet}" />
+			</replaceregexp>
+
+			<replaceregexp match="/\*.*?\*/" replace="" flags="g" byline="false">
+				<fileset refid="@{fileSet}" />
+			</replaceregexp>
+
+			<removeSpacesAround string="\{" replace="{" fileSet="@{fileSet}" />
+			<removeSpacesAround string="\}" replace="}" fileSet="@{fileSet}" />
+			<removeSpacesAround string="\," replace="," fileSet="@{fileSet}" />
+			<removeSpacesAround string="\;" replace=";" fileSet="@{fileSet}" />
+			<removeSpacesAround string="\." replace="." fileSet="@{fileSet}" />
+			<removeSpacesAround string="\:" replace=":" fileSet="@{fileSet}" />
+			<removeSpacesAround string="\&quot;" replace="&quot;" fileSet="@{fileSet}" />
+			<removeSpacesAround string="\'" replace="'" fileSet="@{fileSet}" />
+		</sequential>
+	</macrodef>
+
+	<!-- This macros is used internally to increment the step counter of the
+	     minification macro. -->
+	<macrodef name="property-exp" description="set a property based on the JavaScript expansion of a value expression.">
+		<!-- taken from http://stackoverflow.com/questions/16359221 -->
+		<attribute name="name" />
+		<attribute name="value" />
+		<sequential>
+			<script language="javascript">
+	            project.setProperty("@{name}", eval(@{value}));
+	        </script>
+		</sequential>
+	</macrodef>
+
+	<!-- This macro copies all HTML and CSS files from a source to a destination folder
+	     and minifies them. It applies the above minification macros until there is no
+	     change anymore, i.e., until all the superfluous spaces and stuff have been
+	     stripped. -->
+	<macrodef name="minify" description="Minify html and css.">
+		<attribute name="fromDir" />
+		<attribute name="toDir" />
+		<attribute name="iteration" default="1" />
+		<attribute name="copy" default="true" />
+		<sequential>
+			<echo message="Minifying HTML and CSS from '@{fromDir}' to '@{toDir}' (iteration @{iteration})." />
+			<mkdir dir="@{toDir}" if:true="@{copy}" />
+
+			<!-- Make sure that the CSS and HTML files are moved to the destination folder. -->
+			<copy todir="@{toDir}" unless:true="@{merge}" if:true="@{copy}">
+				<fileset dir="@{fromDir}" />
+			</copy>
+
+			<!-- create the temp file as time stamp for checking out-of-time -->
+			<tempfile property="@{fromDir}.@{iteration}.tmp" prefix="timestamp" suffix=".tmp" createfile="true" destdir="@{fromDir}" deleteonexit="true" />
+
+			<!-- make the css smaller -->
+			<fileset id="@{toDir}.css.fileSet" dir="@{toDir}/css/" includes="**/*.css,**/*.inc-css" />
+			<cleanCSS fileSet="@{toDir}.css.fileSet" />
+
+			<!-- make the HTML smaller based on an extremely crude heuristic -->
+			<fileset id="@{toDir}.html.fileSet" dir="@{toDir}/" includes="**/*.html,**/*.inc-html" />
+			<cleanHTML fileSet="@{toDir}.html.fileSet" />
+
+			<!-- check whether the above cleansing has changed anything (i.e., the file modification time) -->
+			<uptodate property="@{fromDir}.@{iteration}.uptodate" targetfile="${@{fromDir}.@{iteration}.tmp}">
+				<srcfiles dir="@{toDir}" includes="**/**" />
+			</uptodate>
+			<delete file="${@{fromDir}.@{iteration}.tmp}" />
+
+			<!-- if at least one of the cleansed files has a newer time stamp than the temp file,
+			     recursively call this method for one more iteration -->
+			<echo message="Changes detected, performing another iteration of minification." unless:true="${@{fromDir}.@{iteration}.uptodate}" />
+			<echo message="No changes detected since last minification step. We can quit now." if:true="${@{fromDir}.@{iteration}.uptodate}" />
+			<property-exp name="@{fromDir}.@{iteration}.next" value="@{iteration}+1" unless:true="${@{fromDir}.@{iteration}.uptodate}" />
+			<minify fromDir="@{toDir}" toDir="@{toDir}" iteration="${@{fromDir}.@{iteration}.next}" copy="false" unless:true="${@{fromDir}.@{iteration}.uptodate}" />
+
+			<echo message="Finished minifying HTML and CSS from '@{fromDir}' to '@{toDir}' (iteration @{iteration})." />
+		</sequential>
+	</macrodef>
+
+	<!-- Copy the assembled and minified website to the destination folder and merge in
+	     the resources. Delete all files which are no longer needed. Preserve files which
+	     have not changed. -->
 	<macrodef name="commit" description="Copy files only if different; remove files that do not exist in dir. This works similiar to robocopy /MIR.">
+		<!-- taken from http://stackoverflow.com/questions/1123151 -->
 		<attribute name="fromDir" />
 		<attribute name="toDir" />
 		<attribute name="resourcesDir" />
@@ -259,16 +357,38 @@
 		</sequential>
 	</macrodef>
 
-
+	<!-- This is the main target and build script it does:
+	     1. Delete all temporary and intermediate files.
+	     2. Build the website builder tool.
+	     3. Assemble the HTML and CSS files by expanding their properties and copying
+	        the result into a temporary folder. This leaves the include files untouched.
+	     4. Minify all these files.
+	     5. Apply the website builder tool: resolve URLs and includes.
+	     6. Minify again.
+	     7. Commit to the 'build' folder.
+	     8. Delete all temporary and intermediate files. 
+   -->
 	<target name="build">
 		<sequential>
 			<clean />
 			<websiteBuilder-build />
-			<assemble fromDir="${builder.websiteSourceDir}" toDir="${builder.websiteTempDir}/stage_1" />
-			<minify fromDir="${builder.websiteTempDir}/stage_1" toDir="${builder.websiteTempDir}/stage_2" />
-			<websiteBuilder-exec fromDir="${builder.websiteTempDir}/stage_2" toDir="${builder.websiteTempDir}/stage_3" />
-			<minify fromDir="${builder.websiteTempDir}/stage_3" toDir="${builder.websiteTempDir}/stage_4" />
-			<commit fromDir="${builder.websiteTempDir}/stage_4" toDir="${builder.websiteDestDir}" resourcesDir="${builder.websiteResourcesDir}" />
+
+			<property name="builder.stage1Dir" location="${builder.websiteTempDir}/stage_1" />
+			<property name="builder.stage2Dir" location="${builder.websiteTempDir}/stage_2" />
+			<property name="builder.stage3Dir" location="${builder.websiteTempDir}/stage_3" />
+			<property name="builder.stage4Dir" location="${builder.websiteTempDir}/stage_4" />
+
+			<assemble fromDir="${builder.websiteSourceDir}" toDir="${builder.stage1Dir}" />
+			<minify fromDir="${builder.stage1Dir}" toDir="${builder.stage2Dir}" />
+			<delete dir="${builder.stage1Dir}" />
+
+			<websiteBuilder-exec fromDir="${builder.stage2Dir}" toDir="${builder.stage3Dir}" />
+			<delete dir="${builder.stage2Dir}" />
+
+			<minify fromDir="${builder.stage3Dir}" toDir="${builder.stage4Dir}" />
+			<delete dir="${builder.stage3Dir}" />
+
+			<commit fromDir="${builder.stage4Dir}" toDir="${builder.websiteDestDir}" resourcesDir="${builder.websiteResourcesDir}" />
 			<clean />
 		</sequential>
 	</target>
