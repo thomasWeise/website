@@ -2,6 +2,9 @@ package thomasWeise.websiteBuilder.compressor;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.concurrent.TimeUnit;
 
 /** The compressor class. */
 final class _Compressor {
@@ -18,7 +21,7 @@ final class _Compressor {
    */
   static final byte[] _compress(final byte[] source) throws IOException {
     int level;
-    byte[] result;
+    byte[] result, tmp;
 
     result = null;
     try (final ByteArrayOutputStream bos = new ByteArrayOutputStream(
@@ -44,6 +47,75 @@ final class _Compressor {
           result = bos.toByteArray();
         }
         bos.reset();
+      }
+
+      tmp = _Compressor.__gzip(source, bos);
+      if ((tmp != null)
+          && ((result == null) || (tmp.length < result.length))) {
+        result = tmp;
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Try to use GZIP command line tool, if it is installed. This will only
+   * work on Linux-like systems, otherwise return {@code null}.
+   *
+   * @param in
+   *          the input data
+   * @param buffer
+   *          the internal buffer to use
+   * @return the output data or {@code null} if compression failed
+   */
+  private static final byte[] __gzip(final byte[] in,
+      final ByteArrayOutputStream buffer) {
+    final Runtime runtime;
+    final byte[] rb;
+    Process proc;
+    byte[] result, temp;
+    int level, read;
+
+    runtime = Runtime.getRuntime();
+    result = null;
+    rb = new byte[16384];
+
+    for (level = 1; level <= 9; level++) {
+      try {
+        proc = runtime.exec(new String[] { "gzip", //$NON-NLS-1$
+            "-" + level, //$NON-NLS-1$
+            "-c", //$NON-NLS-1$
+            "-q", //$NON-NLS-1$
+            "-f", });//$NON-NLS-1$
+        try {
+
+          try (final OutputStream os = proc.getOutputStream()) {
+            os.write(in);
+            os.flush();
+          }
+
+          buffer.reset();
+          try (final InputStream is = proc.getInputStream()) {
+            while ((read = is.read(rb)) > 0) {
+              buffer.write(rb, 0, read);
+            }
+          }
+
+          temp = buffer.toByteArray();
+          buffer.reset();
+          if ((result == null) || (temp.length < result.length)) {
+            result = temp;
+          }
+        } finally {
+          try {
+            proc.waitFor(5, TimeUnit.MINUTES);
+          } finally {
+            proc.destroy();
+          }
+        }
+      } catch (@SuppressWarnings("unused") final Throwable ioe) { // ignore!
+        return null;
       }
     }
 
