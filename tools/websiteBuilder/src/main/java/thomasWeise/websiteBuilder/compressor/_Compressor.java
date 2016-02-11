@@ -2,7 +2,6 @@ package thomasWeise.websiteBuilder.compressor;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.zip.GZIPOutputStream;
 
 /** The compressor class. */
 final class _Compressor {
@@ -26,15 +25,24 @@ final class _Compressor {
         source.length)) {
 
       for (level = 0; level <= 9; level++) {
-        try (final MyGZIPOutputStream gos = new MyGZIPOutputStream(bos,
-            source.length, level)) {
+
+        try (final __JavaGZIPOutputStream gos = new __JavaGZIPOutputStream(
+            bos, source.length, level)) {
           gos.write(source);
         }
-
         if ((result == null) || (bos.size() < result.length)) {
           result = bos.toByteArray();
         }
+        bos.reset();
 
+        try (
+            final __JZLibGZIPOutputStream gos = new __JZLibGZIPOutputStream(
+                bos, source.length, level)) {
+          gos.write(source);
+        }
+        if ((result == null) || (bos.size() < result.length)) {
+          result = bos.toByteArray();
+        }
         bos.reset();
       }
     }
@@ -43,7 +51,8 @@ final class _Compressor {
   }
 
   /** the internal gzip class */
-  private static final class MyGZIPOutputStream extends GZIPOutputStream {
+  private static final class __JavaGZIPOutputStream
+      extends java.util.zip.GZIPOutputStream {
 
     /**
      * Create the stream
@@ -57,10 +66,34 @@ final class _Compressor {
      * @throws IOException
      *           if something goes wrong
      */
-    MyGZIPOutputStream(final ByteArrayOutputStream _out, final int size,
-        final int level) throws IOException {
+    __JavaGZIPOutputStream(final ByteArrayOutputStream _out,
+        final int size, final int level) throws IOException {
       super(_out, size, false);
       this.def.setLevel(level);
+    }
+  }
+
+  /** the internal gzip class */
+  private static final class __JZLibGZIPOutputStream
+      extends com.jcraft.jzlib.GZIPOutputStream {
+
+    /**
+     * Create the stream
+     *
+     * @param _out
+     *          the output stream to write to
+     * @param size
+     *          the size
+     * @param level
+     *          the level to use
+     * @throws IOException
+     *           if something goes wrong
+     */
+    __JZLibGZIPOutputStream(final ByteArrayOutputStream _out,
+        final int size, final int level) throws IOException {
+      super(_out, new com.jcraft.jzlib.Deflater(level, 15 + 16), size,
+          false);
+      this.mydeflater = true;
     }
   }
 }
