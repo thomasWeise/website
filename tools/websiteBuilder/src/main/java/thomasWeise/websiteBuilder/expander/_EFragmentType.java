@@ -1,4 +1,4 @@
-package thomasWeise.websiteBuilder;
+package thomasWeise.websiteBuilder.expander;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -9,20 +9,21 @@ import org.optimizationBenchmarking.utils.io.paths.PathUtils;
 /**
  * The fragment types.
  */
-public enum EFragmentType {
+enum _EFragmentType {
 
   /** the HTML type */
   HTML("html", true) { //$NON-NLS-1$
     /** {@inheritDoc} */
     @Override
-    public void process(final Fragment fragment, final Path dest)
+    void _process(final _Fragment fragment, final Path dest)
         throws IOException {
       if ((fragment.context.logger != null)
           && (fragment.context.logger.isLoggable(Level.INFO))) {
         fragment.context.logger
             .info("Now processing fragment " + fragment);//$NON-NLS-1$
       }
-      thomasWeise.websiteBuilder.HTML.processHTML(fragment, dest);
+      thomasWeise.websiteBuilder.expander._HTML._processHTML(fragment,
+          dest);
       if ((fragment.context.logger != null)
           && (fragment.context.logger.isLoggable(Level.INFO))) {
         fragment.context.logger
@@ -34,14 +35,14 @@ public enum EFragmentType {
   CSS("css", true) { //$NON-NLS-1$
     /** {@inheritDoc} */
     @Override
-    public void process(final Fragment fragment, final Path dest)
+    void _process(final _Fragment fragment, final Path dest)
         throws IOException {
       if ((fragment.context.logger != null)
           && (fragment.context.logger.isLoggable(Level.INFO))) {
         fragment.context.logger
             .info("Now processing fragment " + fragment);//$NON-NLS-1$
       }
-      thomasWeise.websiteBuilder.CSS.processCSS(fragment, dest);
+      thomasWeise.websiteBuilder.expander._CSS._processCSS(fragment, dest);
       if ((fragment.context.logger != null)
           && (fragment.context.logger.isLoggable(Level.INFO))) {
         fragment.context.logger
@@ -55,10 +56,10 @@ public enum EFragmentType {
   CSS_INCLUDE("inc-css", false); //$NON-NLS-1$
 
   /** the suffix */
-  public final String suffix;
+  final String suffix;
 
   /** should this fragment type be processed? */
-  public final boolean shouldProcess;
+  final boolean shouldProcess;
 
   /**
    * Create the fragment type
@@ -68,7 +69,7 @@ public enum EFragmentType {
    * @param _shouldProcess
    *          should this fragment type be processed?
    */
-  private EFragmentType(final String _suffix,
+  private _EFragmentType(final String _suffix,
       final boolean _shouldProcess) {
     this.suffix = _suffix;
     this.shouldProcess = _shouldProcess;
@@ -81,11 +82,11 @@ public enum EFragmentType {
    *          the path
    * @return the fragment type
    */
-  public static final EFragmentType getType(final Path path) {
+  static final _EFragmentType getType(final Path path) {
     final String _suffix;
 
     _suffix = PathUtils.getFileExtension(path);
-    for (final EFragmentType type : EFragmentType.values()) {
+    for (final _EFragmentType type : _EFragmentType.values()) {
       if (type.suffix.equalsIgnoreCase(_suffix)) {
         return type;
       }
@@ -103,7 +104,7 @@ public enum EFragmentType {
    * @throws IOException
    *           the i/o exception
    */
-  public void process(final Fragment fragment, final Path dest)
+  void _process(final _Fragment fragment, final Path dest)
       throws IOException {
     throw new IOException("Fragment " + fragment + //$NON-NLS-1$
         " cannot be processed."); //$NON-NLS-1$

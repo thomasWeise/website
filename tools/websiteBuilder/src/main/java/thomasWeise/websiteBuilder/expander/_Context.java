@@ -1,4 +1,4 @@
-package thomasWeise.websiteBuilder;
+package thomasWeise.websiteBuilder.expander;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,19 +14,19 @@ import org.optimizationBenchmarking.utils.io.paths.PathUtils;
 /**
  * A website fragment loading context.
  */
-public class Context {
+final class _Context {
 
   /** the logger */
-  public final Logger logger;
+  final Logger logger;
 
   /** the base path of the source folder */
-  public final Path sourceBase;
+  final Path sourceBase;
 
   /** the destination base */
-  public final Path destBase;
+  final Path destBase;
 
   /** the buffer */
-  private char[] m_buffer;
+  char[] m_buffer;
 
   /**
    * Create the context.
@@ -38,7 +38,7 @@ public class Context {
    * @param _destBase
    *          the destination base
    */
-  public Context(final Logger _logger, final Path _sourceBase,
+  _Context(final Logger _logger, final Path _sourceBase,
       final Path _destBase) {
     super();
     this.logger = _logger;
@@ -58,11 +58,11 @@ public class Context {
    * @throws IOException
    *           if i/o fails
    */
-  public synchronized final Fragment load(final Path path,
+  synchronized final _Fragment _load(final Path path,
       final BasicFileAttributes attrs) throws IOException {
     final Path usePath;
     final StringBuilder sb;
-    final Fragment frag;
+    final _Fragment frag;
     BasicFileAttributes useAttrs;
     char[] data;
     long lsize;
@@ -108,7 +108,7 @@ public class Context {
     }
     sb = new StringBuilder(read);
     sb.append(data, 0, read);
-    frag = new Fragment(this, usePath, sb);
+    frag = new _Fragment(this, usePath, sb);
 
     if ((this.logger != null) && (this.logger.isLoggable(Level.INFO))) {
       this.logger.info("Finished loading path '" + path + //$NON-NLS-1$
@@ -128,9 +128,8 @@ public class Context {
    * @throws IOException
    *           if i/o fails
    */
-  public synchronized final Fragment load(final Path path)
-      throws IOException {
-    return this.load(path, null);
+  synchronized final _Fragment _load(final Path path) throws IOException {
+    return this._load(path, null);
   }
 
   /**
@@ -161,7 +160,7 @@ public class Context {
    *          the path
    * @return the resolved path
    */
-  public final Path resolveSourcePath(final String path) {
+  final Path _resolveSourcePath(final String path) {
     final Path ret;
 
     ret = PathUtils.normalize(this.sourceBase.resolve(path));
@@ -176,7 +175,7 @@ public class Context {
    *          the source path
    * @return the destination path
    */
-  public final Path sourcePathToDestPath(final Path source) {
+  final Path _sourcePathToDestPath(final Path source) {
     final Path ret;
 
     ret = PathUtils.normalize(

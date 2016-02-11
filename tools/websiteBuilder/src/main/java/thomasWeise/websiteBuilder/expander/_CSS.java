@@ -1,4 +1,4 @@
-package thomasWeise.websiteBuilder;
+package thomasWeise.websiteBuilder.expander;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -9,7 +9,7 @@ import java.nio.file.Path;
 import org.optimizationBenchmarking.utils.io.paths.PathUtils;
 
 /** The HTML file processor. */
-public class CSS {
+final class _CSS {
 
   /**
    * Process a HTML document
@@ -21,10 +21,10 @@ public class CSS {
    * @throws IOException
    *           if i/o fails
    */
-  public static final void processCSS(final Fragment fragment,
-      final Path dest) throws IOException {
-    CSS.__processFragment(fragment, fragment.parent);
-    CSS.__store(fragment, dest);
+  static final void _processCSS(final _Fragment fragment, final Path dest)
+      throws IOException {
+    _CSS.__processFragment(fragment, fragment.parent);
+    _CSS.__store(fragment, dest);
   }
 
   /**
@@ -38,12 +38,12 @@ public class CSS {
    * @throws IOException
    *           if i/o fails
    */
-  private static final void __processFragment(final Fragment fragment,
+  private static final void __processFragment(final _Fragment fragment,
       final Path relative) throws IOException {
     boolean looper;
 
     do {
-      looper = CSS.__resolveIncludes(fragment, relative);
+      looper = _CSS.__resolveIncludes(fragment, relative);
     } while (looper);
   }
 
@@ -59,10 +59,10 @@ public class CSS {
    * @throws IOException
    *           if i/o fails
    */
-  private static final boolean __resolveIncludes(final Fragment fragment,
+  private static final boolean __resolveIncludes(final _Fragment fragment,
       final Path relative) throws IOException {
     boolean changed;
-    Fragment resolved;
+    _Fragment resolved;
     int i, j;
 
     changed = false;
@@ -72,13 +72,13 @@ public class CSS {
       if (i >= 0) {
         j = fragment.data.indexOf(">>", i); //$NON-NLS-1$
         if (j > i) {
-          resolved = fragment.context.load(//
-              fragment.resolveSourcePath(//
+          resolved = fragment.context._load(//
+              fragment._resolveSourcePath(//
                   fragment.data.substring(i + 2, j) + '.'
-                      + EFragmentType.CSS_INCLUDE.suffix//
+                      + _EFragmentType.CSS_INCLUDE.suffix//
           ));
 
-          CSS.__processFragment(resolved, relative);
+          _CSS.__processFragment(resolved, relative);
 
           fragment.data.replace(i, j + 2, resolved.data.toString());
           resolved = null;
@@ -102,7 +102,7 @@ public class CSS {
    * @throws IOException
    *           if i/o fails
    */
-  private static final void __store(final Fragment fragment,
+  private static final void __store(final _Fragment fragment,
       final Path dest) throws IOException {
     try (final OutputStream os = PathUtils.openOutputStream(dest)) {
       try (final OutputStreamWriter osw = new OutputStreamWriter(os,

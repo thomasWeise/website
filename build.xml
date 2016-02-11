@@ -44,18 +44,32 @@
 		</sequential>
 	</macrodef>
 
-	<!-- With this macro, we apply the website builder tool that we build above. -->
-	<macrodef name="websiteBuilder-exec" description="Execute the builder.websiteDir builder.">
+	<!-- With this macro, we apply the website builder expander tool that we build above. -->
+	<macrodef name="websiteBuilder-expand" description="Execute the website builder expander.">
 		<attribute name="fromDir" />
 		<attribute name="toDir" />
 		<sequential>
-			<echo message="Executing the websiteBuilder from '@{fromDir}' to '@{toDir}'." />
+			<echo message="Executing the websiteBuilder expander from '@{fromDir}' to '@{toDir}'." />
 			<mkdir dir="@{toDir}" />
 			<java jar="${builder.websiteBuilderTargetDir}/websiteBuilder-0.8.5-SNAPSHOT-full.jar" failonerror="true" fork="true" dir="@{fromDir}">
+				<arg value="expand" />
 				<arg value="source=@{fromDir}" />
 				<arg value="dest=@{toDir}" />
 			</java>
-			<echo message="Finished executing the websiteBuilder from '@{fromDir}' to '@{toDir}'." />
+			<echo message="Finished executing the websiteBuilder expander from '@{fromDir}' to '@{toDir}'." />
+		</sequential>
+	</macrodef>
+
+	<!-- With this macro, we apply the website builder compressor tool that we build above. -->
+	<macrodef name="websiteBuilder-compress" description="Execute the website builder compressor.">
+		<attribute name="dir" />
+		<sequential>
+			<echo message="Executing the websiteBuilder compressor in '@{dir}." />
+			<java jar="${builder.websiteBuilderTargetDir}/websiteBuilder-0.8.5-SNAPSHOT-full.jar" failonerror="true" fork="true" dir="@{dir}">
+				<arg value="compress" />
+				<arg value="dir=@{dir}" />
+			</java>
+			<echo message="Finished executing the websiteBuilder compressor in '@{dir}." />
 		</sequential>
 	</macrodef>
 
@@ -181,6 +195,9 @@
 			<replaceregexp match="\s*\r*\n+\r*\s*" replace=" " flags="gi" byline="false">
 				<fileset refid="@{fileSet}" />
 			</replaceregexp>
+			<replaceregexp match="&lt;--.*?-->" replace="" flags="gi" byline="false">
+				<fileset refid="@{fileSet}" />
+			</replaceregexp>
 
 			<cleanHTMLBlockTag tag="meta" fileSet="@{fileSet}" />
 			<cleanHTMLBlockTag tag="noscript" fileSet="@{fileSet}" />
@@ -217,7 +234,7 @@
 			<cleanHTMLBlockTag tag="hr" fileSet="@{fileSet}" />
 			<cleanHTMLBlockTag tag="select" fileSet="@{fileSet}" />
 			<cleanHTMLBlockTag tag="pre" fileSet="@{fileSet}" />
-      <cleanHTMLBlockTag tag="div" fileSet="@{fileSet}" />
+			<cleanHTMLBlockTag tag="div" fileSet="@{fileSet}" />
 
 			<cleanHTMLTag tag="span" fileSet="@{fileSet}" />
 			<cleanHTMLTag tag="img" fileSet="@{fileSet}" />
@@ -241,11 +258,11 @@
 	<macrodef name="cleanCSS" description="Clean a CSS file set.">
 		<attribute name="fileSet" />
 		<sequential>
-			
+
 			<replaceregexp match="\s+" replace=" " flags="gi" byline="true">
 				<fileset refid="@{fileSet}" />
 			</replaceregexp>
-			
+
 			<replaceregexp match="\s*\r*\n+\r*\s*" replace="" flags="gi" byline="false">
 				<fileset refid="@{fileSet}" />
 			</replaceregexp>
@@ -256,10 +273,10 @@
 
 			<removeSpacesAround string="\{" replace="{" fileSet="@{fileSet}" />
 			<removeSpacesAround string="\}" replace="}" fileSet="@{fileSet}" />
-      <removeSpacesAround string="\[" replace="[" fileSet="@{fileSet}" />
-      <removeSpacesAround string="\]" replace="]" fileSet="@{fileSet}" />
-      <removeSpacesAround string="\(" replace="(" fileSet="@{fileSet}" />
-      <removeSpacesAround string="\)" replace=")" fileSet="@{fileSet}" />
+			<removeSpacesAround string="\[" replace="[" fileSet="@{fileSet}" />
+			<removeSpacesAround string="\]" replace="]" fileSet="@{fileSet}" />
+			<removeSpacesAround string="\(" replace="(" fileSet="@{fileSet}" />
+			<removeSpacesAround string="\)" replace=")" fileSet="@{fileSet}" />
 			<removeSpacesAround string="\," replace="," fileSet="@{fileSet}" />
 			<removeSpacesAround string="\;" replace=";" fileSet="@{fileSet}" />
 			<removeSpacesAround string="\." replace="." fileSet="@{fileSet}" />
@@ -267,9 +284,9 @@
 			<removeSpacesAround string="\&quot;" replace="&quot;" fileSet="@{fileSet}" />
 			<removeSpacesAround string="\'" replace="'" fileSet="@{fileSet}" />
 
-      <replaceregexp match="\;\}" replace="}" flags="gi" byline="false">
-        <fileset refid="@{fileSet}" />
-      </replaceregexp>
+			<replaceregexp match="\;\}" replace="}" flags="gi" byline="false">
+				<fileset refid="@{fileSet}" />
+			</replaceregexp>
 		</sequential>
 	</macrodef>
 
@@ -393,11 +410,13 @@
 			<minify fromDir="${builder.stage1Dir}" toDir="${builder.stage2Dir}" />
 			<delete dir="${builder.stage1Dir}" />
 
-			<websiteBuilder-exec fromDir="${builder.stage2Dir}" toDir="${builder.stage3Dir}" />
+			<websiteBuilder-expand fromDir="${builder.stage2Dir}" toDir="${builder.stage3Dir}" />
 			<delete dir="${builder.stage2Dir}" />
 
 			<minify fromDir="${builder.stage3Dir}" toDir="${builder.stage4Dir}" />
 			<delete dir="${builder.stage3Dir}" />
+
+			<websiteBuilder-compress dir="${builder.stage4Dir}" />
 
 			<commit fromDir="${builder.stage4Dir}" toDir="${builder.websiteDestDir}" resourcesDir="${builder.websiteResourcesDir}" />
 			<clean />

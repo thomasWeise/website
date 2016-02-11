@@ -1,4 +1,4 @@
-package thomasWeise.websiteBuilder;
+package thomasWeise.websiteBuilder.expander;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -13,7 +13,7 @@ import org.optimizationBenchmarking.utils.text.textOutput.ITextOutput;
 import org.optimizationBenchmarking.utils.text.transformations.XMLCharTransformer;
 
 /** The HTML file processor. */
-public class HTML {
+class _HTML {
 
   /**
    * Process a HTML document
@@ -25,10 +25,10 @@ public class HTML {
    * @throws IOException
    *           if i/o fails
    */
-  public static final void processHTML(final Fragment fragment,
-      final Path dest) throws IOException {
-    HTML.__processFragment(fragment, fragment.parent);
-    HTML.__store(fragment, dest);
+  static final void _processHTML(final _Fragment fragment, final Path dest)
+      throws IOException {
+    _HTML.__processFragment(fragment, fragment.parent);
+    _HTML.__store(fragment, dest);
   }
 
   /**
@@ -42,19 +42,19 @@ public class HTML {
    * @throws IOException
    *           if i/o fails
    */
-  private static final void __processFragment(final Fragment fragment,
+  private static final void __processFragment(final _Fragment fragment,
       final Path relative) throws IOException {
     boolean looper;
 
     do {
-      looper = HTML.__replace(fragment.data);
-      if (HTML.__resolveURLs(fragment, relative)) {
+      looper = _HTML.__replace(fragment.data);
+      if (_HTML.__resolveURLs(fragment, relative)) {
         looper = true;
       }
-      if (HTML.__resolveLinks(fragment, relative)) {
+      if (_HTML.__resolveLinks(fragment, relative)) {
         looper = true;
       }
-      if (HTML.__resolveIncludes(fragment, relative)) {
+      if (_HTML.__resolveIncludes(fragment, relative)) {
         looper = true;
       }
     } while (looper);
@@ -70,26 +70,26 @@ public class HTML {
   private static final boolean __replace(final StringBuilder data) {
     boolean changed;
 
-    changed = HTML.__replace(data, "<dquote> ", "<dquote> "); //$NON-NLS-1$//$NON-NLS-2$
-    if (HTML.__replace(data, " </dquote> ", "</dquote> ")) { //$NON-NLS-1$//$NON-NLS-2$
+    changed = _HTML.__replace(data, "<dquote> ", "<dquote> "); //$NON-NLS-1$//$NON-NLS-2$
+    if (_HTML.__replace(data, " </dquote> ", "</dquote> ")) { //$NON-NLS-1$//$NON-NLS-2$
       changed = true;
     }
-    if (HTML.__replace(data, "<dquote>", "&ldquo;")) { //$NON-NLS-1$//$NON-NLS-2$
+    if (_HTML.__replace(data, "<dquote>", "&ldquo;")) { //$NON-NLS-1$//$NON-NLS-2$
       changed = true;
     }
-    if (HTML.__replace(data, "</dquote>", "&rdquo;")) { //$NON-NLS-1$//$NON-NLS-2$
+    if (_HTML.__replace(data, "</dquote>", "&rdquo;")) { //$NON-NLS-1$//$NON-NLS-2$
       changed = true;
     }
-    if (HTML.__replace(data, "<squote> ", "<squote>")) { //$NON-NLS-1$//$NON-NLS-2$
+    if (_HTML.__replace(data, "<squote> ", "<squote>")) { //$NON-NLS-1$//$NON-NLS-2$
       changed = true;
     }
-    if (HTML.__replace(data, " </squote>", "</squote>")) { //$NON-NLS-1$//$NON-NLS-2$
+    if (_HTML.__replace(data, " </squote>", "</squote>")) { //$NON-NLS-1$//$NON-NLS-2$
       changed = true;
     }
-    if (HTML.__replace(data, "<squote>", "&lsquo;")) { //$NON-NLS-1$//$NON-NLS-2$
+    if (_HTML.__replace(data, "<squote>", "&lsquo;")) { //$NON-NLS-1$//$NON-NLS-2$
       changed = true;
     }
-    if (HTML.__replace(data, "</squote>", "&rsquo;")) { //$NON-NLS-1$//$NON-NLS-2$
+    if (_HTML.__replace(data, "</squote>", "&rsquo;")) { //$NON-NLS-1$//$NON-NLS-2$
       changed = true;
     }
     return changed;
@@ -134,10 +134,10 @@ public class HTML {
    * @throws IOException
    *           if i/o fails
    */
-  private static final boolean __resolveIncludes(final Fragment fragment,
+  private static final boolean __resolveIncludes(final _Fragment fragment,
       final Path relative) throws IOException {
     boolean changed;
-    Fragment resolved;
+    _Fragment resolved;
     int i, j;
 
     changed = false;
@@ -147,13 +147,13 @@ public class HTML {
       if (i >= 0) {
         j = fragment.data.indexOf(">>", i); //$NON-NLS-1$
         if (j > i) {
-          resolved = fragment.context.load(//
-              fragment.resolveSourcePath(//
+          resolved = fragment.context._load(//
+              fragment._resolveSourcePath(//
                   fragment.data.substring(i + 2, j) + '.'
-                      + EFragmentType.HTML_INCLUDE.suffix//
+                      + _EFragmentType.HTML_INCLUDE.suffix//
           ));
 
-          HTML.__processFragment(resolved, relative);
+          _HTML.__processFragment(resolved, relative);
 
           fragment.data.replace(i, j + 2, resolved.data.toString());
           resolved = null;
@@ -176,9 +176,11 @@ public class HTML {
    *          the path towards which all output paths have to be
    *          relativized against
    * @return {@code true} if something has changed, {@code false} otherwise
+   * @throws IOException
+   *           if i/o fails
    */
-  private static final boolean __resolveURLs(final Fragment fragment,
-      final Path relative) {
+  private static final boolean __resolveURLs(final _Fragment fragment,
+      final Path relative) throws IOException {
     int i, j;
     boolean changed;
 
@@ -190,8 +192,8 @@ public class HTML {
         j = fragment.data.indexOf("}}", i); //$NON-NLS-1$
         if (j > i) {
           fragment.data.replace(i, j + 2, //
-              relative.relativize(fragment.resolveSourcePath(//
-                  fragment.data.substring(i + 2, j))).toString());
+              fragment._resolveAndRelativize(//
+                  fragment.data.substring(i + 2, j), null, relative));
           changed = true;
           continue;
         }
@@ -210,11 +212,12 @@ public class HTML {
    *          the path towards which all output paths have to be
    *          relativized against
    * @return {@code true} if something has changed, {@code false} otherwise
+   * @throws IOException
+   *           if i/o fails
    */
-  private static final boolean __resolveLinks(final Fragment fragment,
-      final Path relative) {
+  private static final boolean __resolveLinks(final _Fragment fragment,
+      final Path relative) throws IOException {
     int i, j, k, z;
-    Path relativePath;
     String rawURL, rawPath, rawAnchor, url, title, replace, extension;
     boolean changed;
 
@@ -238,12 +241,8 @@ public class HTML {
               rawAnchor = null;
             }
 
-            relativePath = relative.relativize(//
-                fragment.resolveSourcePath(rawPath));
-            url = relativePath.toString();
-            if (rawAnchor != null) {
-              url += '#' + rawAnchor;
-            }
+            url = fragment._resolveAndRelativize(rawPath, rawAnchor,
+                relative);
 
             extension = PathUtils.getFileExtension(rawPath).toLowerCase();
             title = TextUtils.prepare(fragment.data.substring(j + 1, k));
@@ -290,7 +289,7 @@ public class HTML {
    * @throws IOException
    *           if i/o fails
    */
-  private static final void __store(final Fragment fragment,
+  private static final void __store(final _Fragment fragment,
       final Path dest) throws IOException {
     final ITextOutput to;
     final int length;

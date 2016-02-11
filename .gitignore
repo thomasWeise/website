@@ -22,7 +22,6 @@
 /tools/websiteBuilder/.gradle
 /tools/websiteBuilder/dependency-reduced-pom.xml
 
-
 ## Java Git Ignores
 *.class
 

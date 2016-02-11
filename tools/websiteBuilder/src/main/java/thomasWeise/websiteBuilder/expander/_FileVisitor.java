@@ -1,4 +1,4 @@
-package thomasWeise.websiteBuilder;
+package thomasWeise.websiteBuilder.expander;
 
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
@@ -9,10 +9,10 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.logging.Level;
 
 /** The visitor for all of our files. */
-public class FileVisitor extends SimpleFileVisitor<Path> {
+class _FileVisitor extends SimpleFileVisitor<Path> {
 
   /** the context */
-  private final Context m_context;
+  private final _Context m_context;
 
   /**
    * create
@@ -20,7 +20,7 @@ public class FileVisitor extends SimpleFileVisitor<Path> {
    * @param context
    *          the context
    */
-  public FileVisitor(final Context context) {
+  _FileVisitor(final _Context context) {
     super();
     this.m_context = context;
   }
@@ -31,7 +31,7 @@ public class FileVisitor extends SimpleFileVisitor<Path> {
       final BasicFileAttributes attrs) throws IOException {
     final FileVisitResult res;
     final Path dest;
-    EFragmentType type;
+    _EFragmentType type;
 
     if ((this.m_context.logger != null)
         && (this.m_context.logger.isLoggable(Level.INFO))) {
@@ -42,9 +42,9 @@ public class FileVisitor extends SimpleFileVisitor<Path> {
     if (res == FileVisitResult.CONTINUE) {
 
       if (attrs.size() > 0L) {
-        dest = this.m_context.sourcePathToDestPath(file);
+        dest = this.m_context._sourcePathToDestPath(file);
 
-        type = EFragmentType.getType(file);
+        type = _EFragmentType.getType(file);
         if (type == null) {
           throw new IllegalArgumentException(//
               "Path '" + file + //$NON-NLS-1$
@@ -52,7 +52,7 @@ public class FileVisitor extends SimpleFileVisitor<Path> {
         }
         if (type.shouldProcess) {
           Files.createDirectories(dest.getParent());
-          type.process(this.m_context.load(file, attrs), dest);
+          type._process(this.m_context._load(file, attrs), dest);
         }
 
       } else {
