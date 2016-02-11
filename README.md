@@ -12,7 +12,7 @@ It prescribes the following folder structure:
     + `css`: the style sheets
     + `html`: the HTML files
     + `resources`: Same folder structure as `html`, contains all static resources such as images or icons.
-      - `icons`: 20pxx20px `png` icons for file types. You can take these from [my icons project](http://www.github.com/thomasWeise/icons) on GitHub.
+      - `icons`: 32px*32px `png` icons for file types. You can take these from [my icons project](http://www.github.com/thomasWeise/icons) on GitHub.
   * `build`: The generated website
 
 

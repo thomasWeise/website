@@ -217,6 +217,7 @@
 			<cleanHTMLBlockTag tag="hr" fileSet="@{fileSet}" />
 			<cleanHTMLBlockTag tag="select" fileSet="@{fileSet}" />
 			<cleanHTMLBlockTag tag="pre" fileSet="@{fileSet}" />
+      <cleanHTMLBlockTag tag="div" fileSet="@{fileSet}" />
 
 			<cleanHTMLTag tag="span" fileSet="@{fileSet}" />
 			<cleanHTMLTag tag="img" fileSet="@{fileSet}" />
@@ -240,25 +241,35 @@
 	<macrodef name="cleanCSS" description="Clean a CSS file set.">
 		<attribute name="fileSet" />
 		<sequential>
+			
 			<replaceregexp match="\s+" replace=" " flags="gi" byline="true">
 				<fileset refid="@{fileSet}" />
 			</replaceregexp>
+			
 			<replaceregexp match="\s*\r*\n+\r*\s*" replace="" flags="gi" byline="false">
 				<fileset refid="@{fileSet}" />
 			</replaceregexp>
 
-			<replaceregexp match="/\*.*?\*/" replace="" flags="g" byline="false">
+			<replaceregexp match="/\*.*?\*/" replace="" flags="gi" byline="false">
 				<fileset refid="@{fileSet}" />
 			</replaceregexp>
 
 			<removeSpacesAround string="\{" replace="{" fileSet="@{fileSet}" />
 			<removeSpacesAround string="\}" replace="}" fileSet="@{fileSet}" />
+      <removeSpacesAround string="\[" replace="[" fileSet="@{fileSet}" />
+      <removeSpacesAround string="\]" replace="]" fileSet="@{fileSet}" />
+      <removeSpacesAround string="\(" replace="(" fileSet="@{fileSet}" />
+      <removeSpacesAround string="\)" replace=")" fileSet="@{fileSet}" />
 			<removeSpacesAround string="\," replace="," fileSet="@{fileSet}" />
 			<removeSpacesAround string="\;" replace=";" fileSet="@{fileSet}" />
 			<removeSpacesAround string="\." replace="." fileSet="@{fileSet}" />
 			<removeSpacesAround string="\:" replace=":" fileSet="@{fileSet}" />
 			<removeSpacesAround string="\&quot;" replace="&quot;" fileSet="@{fileSet}" />
 			<removeSpacesAround string="\'" replace="'" fileSet="@{fileSet}" />
+
+      <replaceregexp match="\;\}" replace="}" flags="gi" byline="false">
+        <fileset refid="@{fileSet}" />
+      </replaceregexp>
 		</sequential>
 	</macrodef>
 
