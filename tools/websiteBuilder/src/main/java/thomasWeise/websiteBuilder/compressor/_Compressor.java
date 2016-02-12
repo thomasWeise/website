@@ -2,9 +2,8 @@ package thomasWeise.websiteBuilder.compressor;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /** The compressor class. */
 final class _Compressor {
@@ -15,11 +14,16 @@ final class _Compressor {
    *
    * @param source
    *          the source data
+   * @param logger
+   *          the logger to use
+   * @param path
+   *          the path
    * @return the compressed result
    * @throws IOException
    *           if something goes wrong
    */
-  static final byte[] _compress(final byte[] source) throws IOException {
+  static final byte[] _compress(final byte[] source, final Logger logger,
+      final String path) throws IOException {
     int level;
     byte[] result, tmp;
 
@@ -29,12 +33,22 @@ final class _Compressor {
 
       for (level = 0; level <= 9; level++) {
 
+        if ((logger != null) && (logger.isLoggable(Level.INFO))) {
+          logger.info("Now compressing " + path + //$NON-NLS-1$
+              " with Java's own GZIP implementation at level " + level); //$NON-NLS-1$
+        }
         try (final __JavaGZIPOutputStream gos = new __JavaGZIPOutputStream(
             bos, source.length, level)) {
           gos.write(source);
         }
         if ((result == null) || (bos.size() < result.length)) {
           result = bos.toByteArray();
+        }
+        if ((logger != null) && (logger.isLoggable(Level.INFO))) {
+          logger.info("Finished compressing " + path + //$NON-NLS-1$
+              " with Java's own GZIP implementation at level " + level + //$NON-NLS-1$
+              ", resulting size " + bos.size() + //$NON-NLS-1$
+              "; now using JZLib.");//$NON-NLS-1$
         }
         bos.reset();
 
@@ -46,76 +60,57 @@ final class _Compressor {
         if ((result == null) || (bos.size() < result.length)) {
           result = bos.toByteArray();
         }
+        if ((logger != null) && (logger.isLoggable(Level.INFO))) {
+          logger.info("Finishedcompressing " + path + //$NON-NLS-1$
+              " with JZLib's GZIP implementation at level " + level + //$NON-NLS-1$
+              ", resulting size " + bos.size());//$NON-NLS-1$
+        }
         bos.reset();
       }
 
-      tmp = _Compressor.__gzip(source, bos);
-      if ((tmp != null)
-          && ((result == null) || (tmp.length < result.length))) {
-        result = tmp;
-      }
-    }
+      if (_GZIP._GZIP_PATH != null) {
 
-    return result;
-  }
-
-  /**
-   * Try to use GZIP command line tool, if it is installed. This will only
-   * work on Linux-like systems, otherwise return {@code null}.
-   *
-   * @param in
-   *          the input data
-   * @param buffer
-   *          the internal buffer to use
-   * @return the output data or {@code null} if compression failed
-   */
-  private static final byte[] __gzip(final byte[] in,
-      final ByteArrayOutputStream buffer) {
-    final Runtime runtime;
-    final byte[] rb;
-    Process proc;
-    byte[] result, temp;
-    int level, read;
-
-    runtime = Runtime.getRuntime();
-    result = null;
-    rb = new byte[16384];
-
-    for (level = 1; level <= 9; level++) {
-      try {
-        proc = runtime.exec(new String[] { "gzip", //$NON-NLS-1$
-            "-" + level, //$NON-NLS-1$
-            "-c", //$NON-NLS-1$
-            "-q", //$NON-NLS-1$
-            "-f", });//$NON-NLS-1$
-        try {
-
-          try (final OutputStream os = proc.getOutputStream()) {
-            os.write(in);
-            os.flush();
+        if ((logger != null) && (logger.isLoggable(Level.INFO))) {
+          logger.info("Now attempting compressing " + path + //$NON-NLS-1$
+              " with the gzip implementation of the OS.");//$NON-NLS-1$
+        }
+        tmp = _GZIP._gzip(source, bos, logger);
+        if (tmp != null) {
+          if (((result == null) || (tmp.length < result.length))) {
+            result = tmp;
           }
-
-          buffer.reset();
-          try (final InputStream is = proc.getInputStream()) {
-            while ((read = is.read(rb)) > 0) {
-              buffer.write(rb, 0, read);
-            }
+          if ((logger != null) && (logger.isLoggable(Level.INFO))) {
+            logger.info("Finished compressing " + path + //$NON-NLS-1$
+                " with the gzip implementation of the OS, resulting size " //$NON-NLS-1$
+                + tmp.length);
           }
-
-          temp = buffer.toByteArray();
-          buffer.reset();
-          if ((result == null) || (temp.length < result.length)) {
-            result = temp;
-          }
-        } finally {
-          try {
-            proc.waitFor(5, TimeUnit.MINUTES);
-          } finally {
-            proc.destroy();
+        } else {
+          if ((logger != null) && (logger.isLoggable(Level.INFO))) {
+            logger.info("Failed compressing " + path + //$NON-NLS-1$
+                " with the gzip implementation of the OS.");//$NON-NLS-1$
           }
         }
-      } catch (@SuppressWarnings("unused") final Throwable ioe) { // ignore!
-        return null;
+
+        if ((logger != null) && (logger.isLoggable(Level.INFO))) {
+          logger.info("Now attempting compressing " + path + //$NON-NLS-1$
+              " with the GZ99 script by gmatht.");//$NON-NLS-1$
+        }
+        tmp = _GZ99._compress(source, logger);
+        if (tmp != null) {
+          if ((result == null) || (tmp.length < result.length)) {
+            result = tmp;
+          }
+          if ((logger != null) && (logger.isLoggable(Level.INFO))) {
+            logger.info("Finished compressing " + path + //$NON-NLS-1$
+                " with the GZ99 script by gmatht, resulting size " //$NON-NLS-1$
+                + tmp.length);
+          }
+        } else {
+          if ((logger != null) && (logger.isLoggable(Level.INFO))) {
+            logger.info("Failed compressing " + path + //$NON-NLS-1$
+                " with tthe GZ99 script by gmatht.");//$NON-NLS-1$
+          }
+        }
       }
     }
 

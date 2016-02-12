@@ -37,6 +37,7 @@ class _FileVisitor extends SimpleFileVisitor<Path> {
     final FileVisitResult res;
     final Path dest;
     final byte[] plain, compressed;
+    final int origSize, improvement;
 
     res = super.visitFile(file, attrs);
     if (res == FileVisitResult.CONTINUE) {
@@ -67,11 +68,18 @@ class _FileVisitor extends SimpleFileVisitor<Path> {
             }
 
             plain = Files.readAllBytes(file);
-            if (plain.length > 50) {
-              compressed = _Compressor._compress(plain);
-              if (compressed.length < (plain.length - 50)) {
-                Files.write(dest, compressed,
-                    StandardOpenOption.CREATE_NEW);
+            origSize = plain.length;
+            if (origSize > 50) {
+              compressed = _Compressor._compress(plain, this.m_logger,
+                  '\'' + file.toString() + '\'');
+              if (compressed != null) {
+                improvement = (origSize - compressed.length);
+                if ((improvement > 50) && //
+                    ((improvement > (origSize / 20))
+                        || (improvement > 4096))) {
+                  Files.write(dest, compressed,
+                      StandardOpenOption.CREATE_NEW);
+                }
               }
             }
 

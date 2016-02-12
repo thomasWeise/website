@@ -349,6 +349,32 @@
 		</sequential>
 	</macrodef>
 
+
+
+
+	<!-- Copy certain new resources into the staging folder in order to check whether they can be compressed. -->
+	<macrodef name="getNewResources" description="Copy certain new resources into the staging folder in order to check whether they can be compressed.">
+		<!-- taken from http://stackoverflow.com/questions/1123151 -->
+		<attribute name="resourcesSrc" />
+		<attribute name="stagingDir" />
+		<attribute name="buildDir" />
+		<sequential>
+			<echo message="Getting new resources (relative to '@{buildDir}') from '@{resourcesSrc}' to '@{stagingDir}'." />
+			<copy overwrite="true" toDir="@{stagingDir}">
+				<fileset dir="@{resourcesSrc}">
+					<different targetdir="@{buildDir}" />
+					<include name="**/*.gif" />
+					<include name="**/*.jpg" />
+					<include name="**/*.pdf" />
+					<include name="**/*.png" />
+					<include name="**/*.txt" />
+				</fileset>
+			</copy>
+			<echo message="Finished getting new resources (relative to '@{buildDir}') from '@{resourcesSrc}' to '@{stagingDir}'." />
+		</sequential>
+	</macrodef>
+
+
 	<!-- Copy the assembled and minified website to the destination folder and merge in
 	     the resources. Delete all files which are no longer needed. Preserve files which
 	     have not changed. -->
@@ -368,6 +394,11 @@
 			<copy overwrite="true" toDir="@{toDir}">
 				<fileset dir="@{resourcesDir}">
 					<different targetdir="@{toDir}" />
+					<exclude name="**/*.gif" />
+					<exclude name="**/*.jpg" />
+					<exclude name="**/*.pdf" />
+					<exclude name="**/*.png" />
+					<exclude name="**/*.txt" />
 				</fileset>
 			</copy>
 
@@ -378,7 +409,11 @@
 						<present targetdir="@{fromDir}" present="srconly" />
 						<present targetdir="@{resourcesDir}" present="srconly" />
 					</and>
-					<exclude name="/css" />
+					<exclude name="**/*.gif.gz" />
+					<exclude name="**/*.jpg.gz" />
+					<exclude name="**/*.pdf.gz" />
+					<exclude name="**/*.png.gz" />
+					<exclude name="**/*.txt.gz" />
 				</fileset>
 			</delete>
 			<echo message="Finished committing website from '@{fromDir}' to '@{toDir}'." />
@@ -393,6 +428,7 @@
 	     4. Minify all these files.
 	     5. Apply the website builder tool: resolve URLs and includes.
 	     6. Minify again.
+	     7. Try to compress static resources.
 	     7. Commit to the 'build' folder.
 	     8. Delete all temporary and intermediate files. 
    -->
@@ -415,7 +451,7 @@
 
 			<minify fromDir="${builder.stage3Dir}" toDir="${builder.stage4Dir}" />
 			<delete dir="${builder.stage3Dir}" />
-
+			<getNewResources resourcesSrc="${builder.websiteResourcesDir}" stagingDir="${builder.stage4Dir}" buildDir="${builder.websiteDestDir}" />
 			<websiteBuilder-compress dir="${builder.stage4Dir}" />
 
 			<commit fromDir="${builder.stage4Dir}" toDir="${builder.websiteDestDir}" resourcesDir="${builder.websiteResourcesDir}" />

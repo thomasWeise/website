@@ -38,6 +38,12 @@ Generate the above file structure (under the `website` folder, the `tools` folde
 * [Apache `Ant`](http://ant.apache.org/bindownload.cgi) 1.9.4 or later
 * [Maven](http://maven.apache.org/) version 3.0 and above
 
+If you are on Linux, the following utilities can improve the compression of static site content:
+
+* [gzip](https://en.wikipedia.org/wiki/Gzip)
+* [AdvanceCOMP](https://en.wikipedia.org/wiki/AdvanceCOMP) (`sudo apt-get install advancecomp`)
+* [7-zip](http://www.7-zip.org/) (`sudo apt-get install p7zip-full`)
+
 ## 5. Static GZIP Resources
 In order to serve stuff maximally fast, we often want to compress contents on the server side before
 sending it. This can be done on-the-fly, but this creates workload on the server (the more the stronger
@@ -81,3 +87,23 @@ may usually not make sense. The website builder, however, tries to also compress
 file types. If the compressed results are at least 50 bytes smaller than the original,
 it will preserve the compressed versions so that they can be served. For all resources
 where this fails, the above rules will simply serve the uncompressed version.
+
+## 6. Problems
+
+The `build` folder in the `website` directory will be synchronized with the changes in
+the `html` folder. Files no longer required will be deleted automatically, with the following
+exceptions:
+
+- `*.gif.gz`
+- `*.jpg.gz`
+- `*.pdf.gz`
+- `*.png.gz`
+- `*.txt.gz`
+
+## 7. License
+This project is licensed under the GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007 *with
+the following exceptions*:
+
+- The file tools/websiteBuilder/src/main/resources/thomasWeise/websiteBuilder/compressor/gz99.sh is a slightly modified version of the script [gz99](https://github.com/gmatht/joshell/blob/master/scripts/gz99)
+created by [gmatht](https://github.com/gmatht) that I discovered at [superuser.com](http://superuser.com/questions/514260).
+The copyright for this script should thus be attribute to [gmatht](https://github.com/gmatht).
