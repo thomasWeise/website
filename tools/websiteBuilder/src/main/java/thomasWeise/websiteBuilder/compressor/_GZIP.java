@@ -16,7 +16,7 @@ import org.optimizationBenchmarking.utils.tools.impl.process.EProcessStream;
 import org.optimizationBenchmarking.utils.tools.impl.process.ExternalProcess;
 import org.optimizationBenchmarking.utils.tools.impl.process.ExternalProcessExecutor;
 
-/** The compressor class. */
+/** The compressor class using the system's GZIP installation. */
 final class _GZIP {
 
   /** the GZIP executable */

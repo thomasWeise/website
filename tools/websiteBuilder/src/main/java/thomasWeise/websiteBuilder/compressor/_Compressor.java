@@ -108,10 +108,34 @@ final class _Compressor {
         } else {
           if ((logger != null) && (logger.isLoggable(Level.INFO))) {
             logger.info("Failed compressing " + path + //$NON-NLS-1$
-                " with tthe GZ99 script by gmatht.");//$NON-NLS-1$
+                " with the GZ99 script by gmatht.");//$NON-NLS-1$
           }
         }
       }
+
+      if (_ADVDEF._ADVDEF_PATH != null) {
+        if ((logger != null) && (logger.isLoggable(Level.INFO))) {
+          logger.info("Now attempting re-compressing " + path + //$NON-NLS-1$
+              " with the advdef implementation of the OS.");//$NON-NLS-1$
+        }
+        tmp = _ADVDEF._advdef(result, source, bos, logger);
+        if (tmp != null) {
+          if ((result == null) || (tmp.length < result.length)) {
+            result = tmp;
+          }
+          if ((logger != null) && (logger.isLoggable(Level.INFO))) {
+            logger.info("Finished re-compressing " + path + //$NON-NLS-1$
+                " with advdef, resulting size " //$NON-NLS-1$
+                + tmp.length);
+          }
+        } else {
+          if ((logger != null) && (logger.isLoggable(Level.INFO))) {
+            logger.info("Failed re-compressing " + path + //$NON-NLS-1$
+                " with advdef.");//$NON-NLS-1$
+          }
+        }
+      }
+
     }
 
     return result;
