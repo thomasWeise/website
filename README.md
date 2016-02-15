@@ -12,6 +12,7 @@ It prescribes the following folder structure:
     + `css`: the style sheets
     + `html`: the HTML files
     + `resources`: Same folder structure as `html`, contains all static resources such as images or icons.
+  If you have a file `abc.pdf` which should go into folder `/project/texts/` along with a file `index.html`, then the paths to these files should be `website/html/projects/texts/index.html` and `website/resources/projects/texts/abc.pdf`.
       - `icons`: 32px*32px `png` icons for file types. You can take these from [my icons project](http://www.github.com/thomasWeise/icons) on GitHub.
   * `build`: The generated website
 
@@ -23,8 +24,11 @@ The following functionality is provided by building the website:
 1. Both `html` and `css` are rigorously minified.
 2. All non-ASCII characters (Chinese, German Umlauts) are translated to HTML entities in `html` files.
 3. Properties from `website.properties` are automatically resolved in all HTML files.
-4. `{{url}}` resolves relative and absolute URLs towards the URL of the current element. Absolute URLs start with `/`.
-5. `[[url]title]` generates links inside the website and resolves URLs. If `url` is not a `html` file, an icon of the corresponding file type (from `resources/icons`) will be added. Absolute URLs start with `/`.
+4. `{{url}}` resolves URLs as follows:
+  1. If the `url` starts with `http://`, `https://`, or `ftp://`, it is normalized.
+  2. `url`s starting with `/` are resolved against the root folder and then relativized against the current path.
+  3. relative `url`s are resolved towards the current element.
+5. `[[url]title]` generates links inside the website and resolves URLs. If `url` is not a `html` file, an icon of the corresponding file type (from `resources/icons`) will be added. `url`s are resolved as as as in `{{url}}`.
 6. ``<<path>>`` includes the fragment identified by `path`. If used inside an `html` file, this will look for a fragment with suffix `inc-html`. If used inside a `css` file, this will look for a fragment with suffix `inc-css`. All the rules in this enumeration are also recursively applied to the fragments.
 6. `<dquote>xxx</dquote>` will resolve to double-quoted `xxx` in `html` files.
 7. `<squote>xxx</squote>` will resolve to single-quoted `xxx` in `html` files.
