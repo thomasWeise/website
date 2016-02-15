@@ -14,7 +14,7 @@ It prescribes the following folder structure:
     + `resources`: Same folder structure as `html`, contains all static resources such as images or icons.
   If you have a file `abc.pdf` which should go into folder `/project/texts/` along with a file `index.html`, then the paths to these files should be `website/html/projects/texts/index.html` and `website/resources/projects/texts/abc.pdf`.
       - `icons`: 32px*32px `png` icons for file types. You can take these from [my icons project](http://www.github.com/thomasWeise/icons) on GitHub.
-  * `build`: The generated website
+  * `build`: The system will place the generated website into this folder. You can upload its contents to your web space.
 
 
 ## 2. Functionality
