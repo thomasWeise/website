@@ -3,6 +3,7 @@ package thomasWeise.websiteBuilder.expander;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.optimizationBenchmarking.utils.io.paths.PathUtils;
@@ -55,9 +56,11 @@ final class _Fragment {
    * @param path
    *          the url or path
    * @return the resolved path
+   * @throws IOException
+   *           if path resolution fails
    */
-  final Path _resolveSourcePath(final String path) {
-    final Path ret;
+  final Path _resolveSourcePath(final String path) throws IOException {
+    final Path ret, check;
     String str;
 
     str = TextUtils.prepare(path);
@@ -66,11 +69,28 @@ final class _Fragment {
     }
 
     if (str.charAt(0) == '/') {
-      return this.context._resolveSourcePath(str.substring(1));
+      ret = this.context._resolveSourcePath(str.substring(1));
+    } else {
+      ret = PathUtils.normalize(this.parent.resolve(str));
+      this.context._checkSourcePath(path, ret);
     }
-    ret = PathUtils.normalize(this.parent.resolve(str));
-    this.context._checkSourcePath(path, ret);
-    return ret;
+
+    if (Files.exists(ret)) {
+      return ret;
+    }
+
+    check = PathUtils.normalize(this.context.resourcesBase.resolve(//
+        this.context.sourceBase.relativize(ret)));
+
+    if (Files.exists(check)) {
+      return check;
+    }
+
+    throw new IOException("Could not find element '" + path + //$NON-NLS-1$
+        "' relative to '" + this.parent + //$NON-NLS-1$
+        "' - neither '" + ret + //$NON-NLS-1$
+        "' nor '" + check + //$NON-NLS-1$
+        "' exists.");//$NON-NLS-1$
   }
 
   /** {@inheritDoc} */

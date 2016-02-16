@@ -13,6 +13,8 @@ public class Main {
 
   /** the source argument */
   public static final String PARAM_SOURCE = "source";//$NON-NLS-1$
+  /** the resources argument */
+  public static final String PARAM_RESOURCES = "resources";//$NON-NLS-1$
   /** the destination argument */
   public static final String PARAM_DEST = "dest";//$NON-NLS-1$
 
@@ -46,13 +48,22 @@ public class Main {
    */
   public static void run(final Configuration config, final Logger logger)
       throws IOException {
-    final Path source, dest;
+    final Path source, resources, dest;
 
     source = config.getPath(Main.PARAM_SOURCE, null);
     if (source == null) {
       if (logger != null) {
         logger.severe("Must specify source folder with argument '" + //$NON-NLS-1$
             Main.PARAM_SOURCE + "=...'."); //$NON-NLS-1$
+      }
+      return;
+    }
+
+    resources = config.getPath(Main.PARAM_RESOURCES, null);
+    if (resources == null) {
+      if (logger != null) {
+        logger.severe("Must specify resource folder with argument '" + //$NON-NLS-1$
+            Main.PARAM_RESOURCES + "=...'."); //$NON-NLS-1$
       }
       return;
     }
@@ -66,7 +77,7 @@ public class Main {
       return;
     }
 
-    Main.__build(source, dest, logger);
+    Main.__build(source, resources, dest, logger);
   }
 
   /**
@@ -74,6 +85,8 @@ public class Main {
    *
    * @param source
    *          the source folder
+   * @param resources
+   *          the resources path
    * @param dest
    *          the destination folder
    * @param logger
@@ -81,15 +94,16 @@ public class Main {
    * @throws IOException
    *           if i/o fails
    */
-  private static final void __build(final Path source, final Path dest,
-      final Logger logger) throws IOException {
+  private static final void __build(final Path source,
+      final Path resources, final Path dest, final Logger logger)
+          throws IOException {
     if ((logger != null) && (logger.isLoggable(Level.INFO))) {
       logger.info("Building website from source '" + source + //$NON-NLS-1$
           "' to dest '" + dest + '\'' + '.');//$NON-NLS-1$
     }
 
     Files.walkFileTree(source,
-        new _FileVisitor(new _Context(logger, source, dest)));
+        new _FileVisitor(new _Context(logger, source, resources, dest)));
 
     if ((logger != null) && (logger.isLoggable(Level.INFO))) {
       logger.info("Finished building website.");//$NON-NLS-1$

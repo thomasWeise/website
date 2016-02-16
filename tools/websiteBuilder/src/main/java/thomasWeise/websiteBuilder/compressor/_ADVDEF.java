@@ -11,6 +11,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 
+import org.optimizationBenchmarking.utils.io.IOUtils;
 import org.optimizationBenchmarking.utils.io.paths.PathUtils;
 import org.optimizationBenchmarking.utils.io.paths.TempDir;
 import org.optimizationBenchmarking.utils.io.paths.predicates.CanExecutePredicate;
@@ -50,7 +51,6 @@ final class _ADVDEF {
     final Path tempFile;
     final byte[] result;
     byte[] buffer;
-    int read;
 
     if (_ADVDEF._ADVDEF_PATH == null) {
       return null;
@@ -95,10 +95,7 @@ final class _ADVDEF {
               result)) {
             try (final GZIPInputStream gis = new GZIPInputStream(bis)) {
               bos.reset();
-              buffer = new byte[4096];
-              while ((read = gis.read(buffer)) > 0) {
-                bos.write(buffer, 0, read);
-              }
+              IOUtils.copy(gis, bos);
               buffer = bos.toByteArray();
               bos.reset();
               if (Arrays.equals(buffer, uncompressed)) {

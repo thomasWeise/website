@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.optimizationBenchmarking.utils.io.IOUtils;
 import org.optimizationBenchmarking.utils.io.paths.PathUtils;
 import org.optimizationBenchmarking.utils.io.paths.predicates.CanExecutePredicate;
 import org.optimizationBenchmarking.utils.io.paths.predicates.FileNamePredicate;
@@ -39,16 +40,14 @@ final class _GZIP {
    */
   static final byte[] _gzip(final byte[] in,
       final ByteArrayOutputStream buffer, final Logger logger) {
-    final byte[] rb;
     byte[] result, temp;
-    int level, read;
+    int level;
 
     if (_GZIP._GZIP_PATH == null) {
       return null;
     }
 
     result = null;
-    rb = new byte[16384];
 
     for (level = 1; level <= 9; level++) {
       try {
@@ -70,9 +69,7 @@ final class _GZIP {
 
           buffer.reset();
           try (final InputStream is = ep.getStdOut()) {
-            while ((read = is.read(rb)) >= 0) {
-              buffer.write(rb, 0, read);
-            }
+            IOUtils.copy(is, buffer);
           }
 
           if (ep.waitFor() != 0) {

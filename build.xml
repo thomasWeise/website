@@ -54,6 +54,7 @@
 			<java jar="${builder.websiteBuilderTargetDir}/websiteBuilder-0.8.5-SNAPSHOT-full.jar" failonerror="true" fork="true" dir="@{fromDir}">
 				<arg value="expand" />
 				<arg value="source=@{fromDir}" />
+				<arg value="resources=${builder.websiteResourcesDir}" />
 				<arg value="dest=@{toDir}" />
 			</java>
 			<echo message="Finished executing the websiteBuilder expander from '@{fromDir}' to '@{toDir}'." />

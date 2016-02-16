@@ -22,6 +22,9 @@ final class _Context {
   /** the base path of the source folder */
   final Path sourceBase;
 
+  /** the base path of the resources folder */
+  final Path resourcesBase;
+
   /** the destination base */
   final Path destBase;
 
@@ -35,14 +38,17 @@ final class _Context {
    *          the logger
    * @param _sourceBase
    *          the source base
+   * @param _resourcesBase
+   *          the resources base folder
    * @param _destBase
    *          the destination base
    */
   _Context(final Logger _logger, final Path _sourceBase,
-      final Path _destBase) {
+      final Path _resourcesBase, final Path _destBase) {
     super();
     this.logger = _logger;
     this.sourceBase = _sourceBase;
+    this.resourcesBase = _resourcesBase;
     this.destBase = _destBase;
     this.m_buffer = new char[16 * 1024 * 1024];
   }
