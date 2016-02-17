@@ -244,7 +244,15 @@ class _HTML {
             url = fragment._resolveAndRelativize(rawPath, rawAnchor,
                 relative);
 
-            extension = PathUtils.getFileExtension(rawPath).toLowerCase();
+            z = rawPath.lastIndexOf('/');
+
+            extension = PathUtils.getFileExtension(
+                (z > 0) ? rawPath.substring(z + 1) : rawPath);
+            if (extension != null) {
+              extension = TextUtils.toLowerCase(extension);
+            } else {// assume HTML
+              extension = _EFragmentType.HTML.suffix;
+            }
             title = TextUtils.prepare(fragment.data.substring(j + 1, k));
 
             if (title == null) {
@@ -254,7 +262,8 @@ class _HTML {
             replace = "<a href=\"" + url //$NON-NLS-1$
                 + "\">"; //$NON-NLS-1$
 
-            if (!("html".equalsIgnoreCase(extension))) {//$NON-NLS-1$
+            if (!(_EFragmentType.HTML.suffix
+                .equalsIgnoreCase(extension))) {
               replace += "<img src=\"" //$NON-NLS-1$
                   + relative
                       .relativize(//

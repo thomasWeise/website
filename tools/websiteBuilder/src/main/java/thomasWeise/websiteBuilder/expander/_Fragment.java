@@ -83,7 +83,7 @@ final class _Fragment {
         this.context.sourceBase.relativize(ret)));
 
     if (Files.exists(check)) {
-      return check;
+      return ret;
     }
 
     throw new IOException("Could not find element '" + path + //$NON-NLS-1$
