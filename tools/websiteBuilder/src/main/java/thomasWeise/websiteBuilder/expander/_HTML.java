@@ -10,10 +10,16 @@ import org.optimizationBenchmarking.utils.io.paths.PathUtils;
 import org.optimizationBenchmarking.utils.text.TextUtils;
 import org.optimizationBenchmarking.utils.text.textOutput.AbstractTextOutput;
 import org.optimizationBenchmarking.utils.text.textOutput.ITextOutput;
+import org.optimizationBenchmarking.utils.text.transformations.LaTeXCharTransformer;
 import org.optimizationBenchmarking.utils.text.transformations.XMLCharTransformer;
 
 /** The HTML file processor. */
 class _HTML {
+
+  /** the opening tag for LaTeX processing */
+  private static final String LATEX_OPEN = "<latex>"; //$NON-NLS-1$
+  /** the closing tag for LaTeX processing */
+  private static final String LATEX_CLOSE = "</latex>"; //$NON-NLS-1$
 
   /**
    * Process a HTML document
@@ -47,7 +53,10 @@ class _HTML {
     boolean looper;
 
     do {
-      looper = _HTML.__replace(fragment.data);
+      looper = _HTML.__LaTeX(fragment.data);
+      if (_HTML.__replacements(fragment.data)) {
+        looper = true;
+      }
       if (_HTML.__resolveURLs(fragment, relative)) {
         looper = true;
       }
@@ -67,7 +76,7 @@ class _HTML {
    *          the data
    * @return {@code true} if something has changed, {@code false} otherwise
    */
-  private static final boolean __replace(final StringBuilder data) {
+  private static final boolean __replacements(final StringBuilder data) {
     boolean changed;
 
     changed = _HTML.__replace(data, "<dquote> ", "<dquote> "); //$NON-NLS-1$//$NON-NLS-2$
@@ -92,6 +101,39 @@ class _HTML {
     if (_HTML.__replace(data, "</squote>", "&rsquo;")) { //$NON-NLS-1$//$NON-NLS-2$
       changed = true;
     }
+    return changed;
+  }
+
+  /**
+   * Resolve LaTeX
+   *
+   * @param data
+   *          the data
+   * @return {@code true} if something has changed, {@code false} otherwise
+   */
+  private static final boolean __LaTeX(final StringBuilder data) {
+    boolean changed;
+    int i, j;
+
+    changed = false;
+    i = 0;
+    while (i >= 0) {
+      i = data.indexOf(_HTML.LATEX_OPEN, i);
+      if (i >= 0) {
+        j = data.indexOf(_HTML.LATEX_CLOSE, i);
+        if (j > i) {
+
+          data.replace(i, j + _HTML.LATEX_CLOSE.length(),
+              LaTeXCharTransformer.getInstance().transform(
+                  data.substring(i + _HTML.LATEX_OPEN.length(), j)));
+
+          changed = true;
+          continue;
+        }
+      }
+      break;
+    }
+
     return changed;
   }
 

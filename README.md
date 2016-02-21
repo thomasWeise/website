@@ -32,7 +32,8 @@ The following functionality is provided by building the website:
 6. ``<<path>>`` includes the fragment identified by `path`. If used inside an `html` file, this will look for a fragment with suffix `inc-html`. If used inside a `css` file, this will look for a fragment with suffix `inc-css`. All the rules in this enumeration are also recursively applied to the fragments.
 6. `<dquote>xxx</dquote>` will resolve to double-quoted `xxx` in `html` files.
 7. `<squote>xxx</squote>` will resolve to single-quoted `xxx` in `html` files.
-8. create static gzip versions of static resources for faster serving
+8. Text between `<latex>...</latex>` will be <a href="http://www.latex-project.org/">LaTeX</a>-escaped (_not_ LaTeX compiled!), i.e., `<latex>Bartłomiej Beliczyński and Andrzej Dzieliński</latex>` becomes `Bart{\l}omiej Beliczy{\'{n}}ski and Andrzej Dzieli{\'{n}}ski`
+9. create static gzip versions of static resources for faster serving
 
 ## 3. How to Use
 Generate the above file structure (under the `website` folder, the `tools` folder is already there). Then run `build.xml` as `Ant` build. This will first build the website builder tool, then build the website.
