@@ -48,6 +48,7 @@ If you are on Linux, the following utilities can improve the compression of stat
 * [gzip](https://en.wikipedia.org/wiki/Gzip)
 * [AdvanceCOMP](https://en.wikipedia.org/wiki/AdvanceCOMP) (`sudo apt-get install advancecomp`)
 * [7-zip](http://www.7-zip.org/) (`sudo apt-get install p7zip-full`)
+* [zopfli](https://en.wikipedia.org/wiki/Zopfli) (`sudo apt-get install zopfli`)
 
 ## 5. Static GZIP Resources
 In order to serve stuff maximally fast, we often want to compress contents on the server side before
@@ -109,6 +110,4 @@ exceptions:
 This project is licensed under the GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007 *with
 the following exceptions*:
 
-- The file tools/websiteBuilder/src/main/resources/thomasWeise/websiteBuilder/compressor/gz99.sh is a slightly modified version of the script [gz99](https://github.com/gmatht/joshell/blob/master/scripts/gz99)
-created by [gmatht](https://github.com/gmatht) that I discovered at [superuser.com](http://superuser.com/questions/514260).
-The copyright for this script should thus be attribute to [gmatht](https://github.com/gmatht).
+This project uses my [`Ultra GZIP`](http://www.github.com/thomasWeise/ultraGzip/) to produce the static `gzip` compressed resources. This tool makes use of several other components with different licenses.

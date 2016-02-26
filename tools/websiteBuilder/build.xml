@@ -12,6 +12,7 @@
 			<buildWithDependencies githubGroup="thomasWeise" githubProject="websiteBuilder">
 				<dependencies>
 					<dependency githubProject="utils-base" />
+					<dependency githubGroup="thomasWeise" githubProject="ultraGzip" />
 				</dependencies>
 			</buildWithDependencies>
 		</sequential>
