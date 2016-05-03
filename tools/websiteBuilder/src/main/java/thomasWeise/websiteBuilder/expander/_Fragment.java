@@ -5,6 +5,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.HashMap;
 
 import org.optimizationBenchmarking.utils.io.paths.PathUtils;
 import org.optimizationBenchmarking.utils.text.TextUtils;
@@ -18,6 +20,9 @@ final class _Fragment {
   /** the owning context */
   final _Context context;
 
+  /** the owner fragment */
+  private final _Fragment m_owner;
+
   /** the source path */
   final Path sourcePath;
 
@@ -30,9 +35,23 @@ final class _Fragment {
   /** the data */
   final StringBuilder data;
 
+  /** the citation ids */
+  private HashMap<Object, Integer> m_citationIDs;
+  /** the citations */
+  private StringBuilder m_citations;
+  /** the citation counter */
+  private int m_citationCounter;
+
+  /** the footnotes */
+  private StringBuilder m_footnotes;
+  /** the footnotes counter */
+  private int m_footnoteCounter;
+
   /**
    * Create
    *
+   * @param _owner
+   *          the owning fragment
    * @param _context
    *          the owning context
    * @param _sourcePath
@@ -40,9 +59,10 @@ final class _Fragment {
    * @param _data
    *          the data
    */
-  _Fragment(final _Context _context, final Path _sourcePath,
-      final StringBuilder _data) {
+  _Fragment(final _Fragment _owner, final _Context _context,
+      final Path _sourcePath, final StringBuilder _data) {
     super();
+    this.m_owner = _owner;
     this.context = _context;
     this.sourcePath = _sourcePath;
     this.parent = PathUtils.normalize(this.sourcePath.getParent());
@@ -140,5 +160,213 @@ final class _Fragment {
     }
 
     return XMLCharTransformer.getInstance().transform(resolved);
+  }
+
+  /**
+   * cite the given source path.
+   *
+   * @param thePaths
+   *          the source paths
+   * @param relativize
+   *          the path against which all links need to be relativized
+   * @return the citation id
+   * @throws IOException
+   *           if I/O fails
+   */
+  final String _cite(final String thePaths, final Path relativize)
+      throws IOException {
+    final String[] paths;
+    final StringBuilder sb;
+    final int initial;
+    int index;
+
+    if (this.m_owner != null) {
+      return this.m_owner._cite(thePaths, relativize);
+    }
+
+    paths = thePaths.split(","); //$NON-NLS-1$
+    sb = new StringBuilder();
+    sb.append("&nbsp;["); //$NON-NLS-1$
+    initial = sb.length();
+    for (index = 0; index < paths.length; index++) {
+      if (sb.length() > initial) {
+        sb.append(',');
+      }
+      this.__cite(this._resolveSourcePath((TextUtils.prepare(paths[index])
+          + '.' + _EFragmentType.HTML_INCLUDE.suffix)), relativize, sb);
+    }
+    sb.append(']');
+    return sb.toString();
+  }
+
+  /**
+   * cite the given source path.
+   *
+   * @param thePath
+   *          the source path
+   * @param relativize
+   *          the path against which all links need to be relativized
+   * @param dest
+   *          the destination string builder
+   * @throws IOException
+   *           if I/O fails
+   */
+  private final void __cite(final Path thePath, final Path relativize,
+      final StringBuilder dest) throws IOException {
+    final _Fragment fragment;
+    Object pathId;
+    Integer id1, id2;
+    int intVal;
+
+    if (this.m_owner != null) {
+      this.m_owner.__cite(thePath, relativize, dest);
+      return;
+    }
+
+    pathId = Files.readAttributes(thePath, BasicFileAttributes.class)
+        .fileKey();
+
+    finder: synchronized (this) {
+      if (this.m_citationCounter <= 0) {
+        this.m_citationIDs = new HashMap<>();
+        this.m_citations = new StringBuilder();
+        id1 = id2 = null;
+      } else {
+        if (pathId != null) {
+          id2 = this.m_citationIDs.get(pathId);
+        } else {
+          id2 = null;
+        }
+        id1 = this.m_citationIDs.get(thePath);
+
+        if (id1 != null) {
+          if ((id2 == null) && (pathId != null)) {
+            this.m_citationIDs.put(pathId, id1);
+          }
+          intVal = id1.intValue();
+          break finder;
+        }
+        if (id2 != null) {
+          this.m_citationIDs.put(id1, id2);
+          intVal = id2.intValue();
+          break finder;
+        }
+      }
+
+      intVal = (++this.m_citationCounter);
+      id1 = Integer.valueOf(intVal);
+      this.m_citationIDs.put(thePath, id1);
+      if (pathId != null) {
+        this.m_citationIDs.put(pathId, id1);
+      }
+
+      fragment = this.context._load(this, thePath);
+      _HTML._processFragment(fragment, relativize);
+
+      this.m_citations.append("<li><span id=\"cte") //$NON-NLS-1$
+          .append(intVal).append("\"></span>")//$NON-NLS-1$
+          .append(fragment.data).append("</li>"); //$NON-NLS-1$
+    }
+
+    dest.append("<a href=\"#cte")//$NON-NLS-1$
+        .append(intVal).append('"').append('>').append(intVal)
+        .append("</a>"); //$NON-NLS-1$
+  }
+
+  /**
+   * get the citations
+   *
+   * @param style
+   *          the style to use
+   * @return the citations
+   */
+  final String _getCitations(final String style) {
+    final StringBuilder sb;
+
+    if (this.m_owner != null) {
+      return this.m_owner._getCitations(style);
+    }
+
+    synchronized (this) {
+      if ((this.m_citationCounter <= 0)
+          || (this.m_citations.length() <= 0)) {
+        return ""; //$NON-NLS-1$
+      }
+
+      sb = new StringBuilder();
+      sb.append("<ol");//$NON-NLS-1$
+      if (style != null) {
+        sb.append(" class=\"");//$NON-NLS-1$
+        sb.append(style);
+        sb.append('"');
+      }
+      sb.append('>');
+      sb.append(this.m_citations);
+      this.m_citations.setLength(0);
+      this.m_citationIDs.clear();
+    }
+    sb.append("</ol>");//$NON-NLS-1$
+    return sb.toString();
+  }
+
+  /**
+   * add a given footnote
+   *
+   * @param footnote
+   *          the footnote
+   * @return the footnote id
+   */
+  final String _footnote(final String footnote) {
+    final int counter;
+
+    if (this.m_owner != null) {
+      return this.m_owner._footnote(footnote);
+    }
+    synchronized (this) {
+      counter = (++this.m_footnoteCounter);
+      if (counter <= 1) {
+        this.m_footnotes = new StringBuilder();
+      }
+      this.m_footnotes.append("<li><span id=\"ftnte") //$NON-NLS-1$
+          .append(counter).append("\"/></span>")//$NON-NLS-1$
+          .append(footnote).append("</li>"); //$NON-NLS-1$
+    }
+    return ((((("<sup><a href=\"#ftnte" + counter) + //$NON-NLS-1$
+        +'"') + '>') + counter) + "</a></sup>"); //$NON-NLS-1$
+  }
+
+  /**
+   * get the footnotes
+   *
+   * @param style
+   *          the style to use
+   * @return the citations
+   */
+  final String _getFootnotes(final String style) {
+    final StringBuilder sb;
+
+    if (this.m_owner != null) {
+      return this.m_owner._getFootnotes(style);
+    }
+
+    synchronized (this) {
+      if ((this.m_footnoteCounter <= 0)
+          || (this.m_footnotes.length() <= 0)) {
+        return ""; //$NON-NLS-1$
+      }
+
+      sb = new StringBuilder();
+      sb.append("<ol");//$NON-NLS-1$
+      if (style != null) {
+        sb.append(" class=\"");//$NON-NLS-1$
+        sb.append(style);
+        sb.append('"');
+      }
+      sb.append('>');
+      sb.append(this.m_footnotes);
+      this.m_footnotes.setLength(0);
+    }
+    sb.append("</ol>");//$NON-NLS-1$
+    return sb.toString();
   }
 }

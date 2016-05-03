@@ -56,6 +56,8 @@ final class _Context {
   /**
    * Load a fragment
    *
+   * @param owner
+   *          the owning fragment
    * @param path
    *          the path
    * @param attrs
@@ -64,8 +66,9 @@ final class _Context {
    * @throws IOException
    *           if i/o fails
    */
-  synchronized final _Fragment _load(final Path path,
-      final BasicFileAttributes attrs) throws IOException {
+  synchronized final _Fragment _load(final _Fragment owner,
+      final Path path, final BasicFileAttributes attrs)
+          throws IOException {
     final Path usePath;
     final StringBuilder sb;
     final _Fragment frag;
@@ -114,7 +117,7 @@ final class _Context {
     }
     sb = new StringBuilder(read);
     sb.append(data, 0, read);
-    frag = new _Fragment(this, usePath, sb);
+    frag = new _Fragment(owner, this, usePath, sb);
 
     if ((this.logger != null) && (this.logger.isLoggable(Level.INFO))) {
       this.logger.info("Finished loading path '" + path + //$NON-NLS-1$
@@ -128,14 +131,17 @@ final class _Context {
   /**
    * Load a fragment
    *
+   * @param owner
+   *          the owning fragment
    * @param path
    *          the path
    * @return the fragment
    * @throws IOException
    *           if i/o fails
    */
-  synchronized final _Fragment _load(final Path path) throws IOException {
-    return this._load(path, null);
+  synchronized final _Fragment _load(final _Fragment owner,
+      final Path path) throws IOException {
+    return this._load(owner, path, null);
   }
 
   /**

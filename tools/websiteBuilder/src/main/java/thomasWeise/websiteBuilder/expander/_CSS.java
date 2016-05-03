@@ -72,7 +72,7 @@ final class _CSS {
       if (i >= 0) {
         j = fragment.data.indexOf(">>", i); //$NON-NLS-1$
         if (j > i) {
-          resolved = fragment.context._load(//
+          resolved = fragment.context._load(fragment, //
               fragment._resolveSourcePath(//
                   fragment.data.substring(i + 2, j) + '.'
                       + _EFragmentType.CSS_INCLUDE.suffix//

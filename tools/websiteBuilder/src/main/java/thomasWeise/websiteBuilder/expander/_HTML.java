@@ -33,7 +33,7 @@ class _HTML {
    */
   static final void _processHTML(final _Fragment fragment, final Path dest)
       throws IOException {
-    _HTML.__processFragment(fragment, fragment.parent);
+    _HTML._processFragment(fragment, fragment.parent);
     _HTML.__store(fragment, dest);
   }
 
@@ -48,7 +48,7 @@ class _HTML {
    * @throws IOException
    *           if i/o fails
    */
-  private static final void __processFragment(final _Fragment fragment,
+  static final void _processFragment(final _Fragment fragment,
       final Path relative) throws IOException {
     boolean looper;
 
@@ -64,6 +64,12 @@ class _HTML {
         looper = true;
       }
       if (_HTML.__resolveIncludes(fragment, relative)) {
+        looper = true;
+      }
+      if (_HTML.__resolveCitations(fragment, relative)) {
+        looper = true;
+      }
+      if (_HTML.__resolveFootnotes(fragment, relative)) {
         looper = true;
       }
     } while (looper);
@@ -189,13 +195,13 @@ class _HTML {
       if (i >= 0) {
         j = fragment.data.indexOf(">>", i); //$NON-NLS-1$
         if (j > i) {
-          resolved = fragment.context._load(//
+          resolved = fragment.context._load(fragment, //
               fragment._resolveSourcePath(//
                   fragment.data.substring(i + 2, j) + '.'
                       + _EFragmentType.HTML_INCLUDE.suffix//
           ));
 
-          _HTML.__processFragment(resolved, relative);
+          _HTML._processFragment(resolved, relative);
 
           fragment.data.replace(i, j + 2, resolved.data.toString());
           resolved = null;
@@ -207,6 +213,111 @@ class _HTML {
     }
 
     return changed;
+  }
+
+  /**
+   * Resolve citations <cite>include1,include2</cite>
+   * <citations>class</citations>
+   *
+   * @param fragment
+   *          the fragment
+   * @param relative
+   *          the path towards which all output paths have to be
+   *          relativized against
+   * @return {@code true} if something has changed, {@code false} otherwise
+   * @throws IOException
+   *           if i/o fails
+   */
+  private static final boolean __resolveCitations(final _Fragment fragment,
+      final Path relative) throws IOException {
+    boolean changed;
+    int i, j;
+
+    changed = false;
+    i = 0;
+    while (i >= 0) {
+      i = fragment.data.indexOf("<cite>", i); //$NON-NLS-1$
+      if (i >= 0) {
+        j = fragment.data.indexOf("</cite>", i); //$NON-NLS-1$
+        if (j > i) {
+          fragment.data.replace(i, j + 7,
+              fragment._cite(fragment.data.substring(i + 6, j), relative));
+          changed = true;
+          continue;
+        }
+      }
+      break;
+    }
+
+    i = 0;
+    while (i >= 0) {
+      i = fragment.data.indexOf("<citations>", i); //$NON-NLS-1$
+      if (i >= 0) {
+        j = fragment.data.indexOf("</citations>", i); //$NON-NLS-1$
+        if (j > i) {
+          fragment.data.replace(i, j + 12, fragment._getCitations(
+              TextUtils.prepare(fragment.data.substring(i + 11, j))));
+          changed = true;
+          continue;
+        }
+      }
+      break;
+    }
+
+    return changed;
+  }
+
+  /**
+   * Resolve footnotes <footnote>include1,include2</footnote>
+   * <footnotes>class</footnotes>
+   *
+   * @param fragment
+   *          the fragment
+   * @param relative
+   *          the path towards which all output paths have to be
+   *          relativized against
+   * @return {@code true} if something has changed, {@code false} otherwise
+   * @throws IOException
+   *           if i/o fails
+   */
+  private static final boolean __resolveFootnotes(final _Fragment fragment,
+      final Path relative) throws IOException {
+    boolean changed;
+    int i, j;
+
+    changed = false;
+    i = 0;
+    while (i >= 0) {
+      i = fragment.data.indexOf("<footnote>", i); //$NON-NLS-1$
+      if (i >= 0) {
+        j = fragment.data.indexOf("</footnote>", i); //$NON-NLS-1$
+        if (j > i) {
+          fragment.data.replace(i, j + 11,
+              fragment._footnote(fragment.data.substring(i + 10, j)));
+          changed = true;
+          continue;
+        }
+      }
+      break;
+    }
+
+    i = 0;
+    while (i >= 0) {
+      i = fragment.data.indexOf("<footnotes>", i); //$NON-NLS-1$
+      if (i >= 0) {
+        j = fragment.data.indexOf("</footnotes>", i); //$NON-NLS-1$
+        if (j > i) {
+          fragment.data.replace(i, j + 12, fragment._getFootnotes(
+              TextUtils.prepare(fragment.data.substring(i + 11, j))));
+          changed = true;
+          continue;
+        }
+      }
+      break;
+    }
+
+    return changed;
+
   }
 
   /**

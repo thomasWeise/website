@@ -52,7 +52,7 @@ class _FileVisitor extends SimpleFileVisitor<Path> {
         }
         if (type.shouldProcess) {
           Files.createDirectories(dest.getParent());
-          type._process(this.m_context._load(file, attrs), dest);
+          type._process(this.m_context._load(null, file, attrs), dest);
         }
 
       } else {

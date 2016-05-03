@@ -33,7 +33,9 @@ The following functionality is provided by building the website:
 6. `<dquote>xxx</dquote>` will resolve to double-quoted `xxx` in `html` files.
 7. `<squote>xxx</squote>` will resolve to single-quoted `xxx` in `html` files.
 8. Text between `<latex>...</latex>` will be <a href="http://www.latex-project.org/">LaTeX</a>-escaped (_not_ LaTeX compiled!), i.e., `<latex>Bartłomiej Beliczyński and Andrzej Dzieliński</latex>` becomes `Bart{\l}omiej Beliczy{\'{n}}ski and Andrzej Dzieli{\'{n}}ski`
-9. create static gzip versions of static resources for faster serving
+9. You can do citations similar to LaTeX but realized via include files: `<cite>path1,path2,...,pathn</cite` will render to something like `&nbsp;[1,2,..,n]`. With the command `<citations>myClass</citations>`, you can generate an `<ol class="myClass"><li>...</li></ol>` with all the contents of the citations. The paths are treated like include file paths. You can have multiple `<citations>` command in a web page. To each citation, we automatically append `.inc-html`.
+10. Footnotes work similar to citations, but without includes: `<footnote>blablabla</footnote>` will render to something like `<sup>1</sup` and with `<footnotes>myClass</footnotes>`, you generate `<ol class="myClass"><li>...</li></ol>`, i.e., the actual footnotes. You can have multiple `<footnotes>` per web page.
+9. create static gzip versions of static resources for faster serving.
 
 ## 3. How to Use
 Generate the above file structure (under the `website` folder, the `tools` folder is already there). Then run `build.xml` as `Ant` build. This will first build the website builder tool, then build the website.
