@@ -340,11 +340,10 @@ final class _Fragment {
       } else {
         this.m_footnoteCounter = (++counter);
         this.m_footnoteIDs.put(useNote, Integer.valueOf(counter));
+        this.m_footnotes.append("<li><span id=\"ftnte") //$NON-NLS-1$
+            .append(counter).append("\"/></span>")//$NON-NLS-1$
+            .append(useNote).append("</li>"); //$NON-NLS-1$
       }
-
-      this.m_footnotes.append("<li><span id=\"ftnte") //$NON-NLS-1$
-          .append(counter).append("\"/></span>")//$NON-NLS-1$
-          .append(useNote).append("</li>"); //$NON-NLS-1$
     }
     return ((((("<sup><a href=\"#ftnte" + counter) //$NON-NLS-1$
         + '"') + '>') + counter) + "</a></sup>"); //$NON-NLS-1$
