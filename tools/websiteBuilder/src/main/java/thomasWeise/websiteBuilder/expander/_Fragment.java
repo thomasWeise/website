@@ -326,7 +326,12 @@ final class _Fragment {
     if (this.m_owner != null) {
       return this.m_owner._footnote(footnote);
     }
+
     useNote = TextUtils.prepare(footnote);
+    if (useNote == null) {
+      throw new IllegalArgumentException("Footnote cannot be empty, but '" //$NON-NLS-1$
+          + footnote + "' is.");//$NON-NLS-1$
+    }
     synchronized (this) {
       counter = this.m_footnoteCounter;
       if (counter <= 0) {
