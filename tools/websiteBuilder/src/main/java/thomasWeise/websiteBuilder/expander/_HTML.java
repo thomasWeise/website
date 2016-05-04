@@ -53,23 +53,31 @@ class _HTML {
     boolean looper;
 
     do {
-      looper = _HTML.__LaTeX(fragment.data);
-      if (_HTML.__replacements(fragment.data)) {
-        looper = true;
-      }
-      if (_HTML.__resolveURLs(fragment, relative)) {
-        looper = true;
-      }
-      if (_HTML.__resolveLinks(fragment, relative)) {
-        looper = true;
-      }
-      if (_HTML.__resolveIncludes(fragment, relative)) {
-        looper = true;
-      }
-      if (_HTML.__resolveCitations(fragment, relative)) {
-        looper = true;
-      }
-      if (_HTML.__resolveFootnotes(fragment, relative)) {
+      do {
+        looper = _HTML.__LaTeX(fragment.data);
+        if (_HTML.__replacements(fragment.data)) {
+          looper = true;
+        }
+        if (_HTML.__resolveURLs(fragment, relative)) {
+          looper = true;
+        }
+        if (_HTML.__resolveLinks(fragment, relative)) {
+          looper = true;
+        }
+        if (_HTML.__resolveIncludes(fragment, relative)) {
+          looper = true;
+        }
+        if (_HTML.__resolveFootnotes(fragment, relative)) {
+          looper = true;
+        }
+        if (_HTML.__flushFootnotes(fragment, relative)) {
+          looper = true;
+        }
+        if (_HTML.__resolveCitations(fragment, relative)) {
+          looper = true;
+        }
+      } while (looper);
+      if (_HTML.__flushCitations(fragment, relative)) {
         looper = true;
       }
     } while (looper);
@@ -249,6 +257,28 @@ class _HTML {
       break;
     }
 
+    return changed;
+  }
+
+  /**
+   * Resolve citations <cite>include1,include2</cite>
+   * <citations>class</citations>
+   *
+   * @param fragment
+   *          the fragment
+   * @param relative
+   *          the path towards which all output paths have to be
+   *          relativized against
+   * @return {@code true} if something has changed, {@code false} otherwise
+   * @throws IOException
+   *           if i/o fails
+   */
+  private static final boolean __flushCitations(final _Fragment fragment,
+      final Path relative) throws IOException {
+    boolean changed;
+    int i, j;
+
+    changed = false;
     i = 0;
     while (i >= 0) {
       i = fragment.data.indexOf("<citations>", i); //$NON-NLS-1$
@@ -301,6 +331,28 @@ class _HTML {
       break;
     }
 
+    return changed;
+  }
+
+  /**
+   * Resolve footnotes <footnote>include1,include2</footnote>
+   * <footnotes>class</footnotes>
+   *
+   * @param fragment
+   *          the fragment
+   * @param relative
+   *          the path towards which all output paths have to be
+   *          relativized against
+   * @return {@code true} if something has changed, {@code false} otherwise
+   * @throws IOException
+   *           if i/o fails
+   */
+  private static final boolean __flushFootnotes(final _Fragment fragment,
+      final Path relative) throws IOException {
+    boolean changed;
+    int i, j;
+
+    changed = false;
     i = 0;
     while (i >= 0) {
       i = fragment.data.indexOf("<footnotes>", i); //$NON-NLS-1$
@@ -317,7 +369,6 @@ class _HTML {
     }
 
     return changed;
-
   }
 
   /**

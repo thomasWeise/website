@@ -44,6 +44,8 @@ final class _Fragment {
 
   /** the footnotes */
   private StringBuilder m_footnotes;
+  /** the footnote ids */
+  private HashMap<String, Integer> m_footnoteIDs;
   /** the footnotes counter */
   private int m_footnoteCounter;
 
@@ -317,22 +319,35 @@ final class _Fragment {
    * @return the footnote id
    */
   final String _footnote(final String footnote) {
-    final int counter;
+    final String useNote;
+    int counter;
+    Integer value;
 
     if (this.m_owner != null) {
       return this.m_owner._footnote(footnote);
     }
+    useNote = TextUtils.prepare(footnote);
     synchronized (this) {
-      counter = (++this.m_footnoteCounter);
-      if (counter <= 1) {
+      counter = this.m_footnoteCounter;
+      if (counter <= 0) {
         this.m_footnotes = new StringBuilder();
+        this.m_footnoteIDs = new HashMap<>();
       }
+
+      value = this.m_footnoteIDs.get(useNote);
+      if (value != null) {
+        counter = value.intValue();
+      } else {
+        this.m_footnoteCounter = (++counter);
+        this.m_footnoteIDs.put(useNote, Integer.valueOf(counter));
+      }
+
       this.m_footnotes.append("<li><span id=\"ftnte") //$NON-NLS-1$
           .append(counter).append("\"/></span>")//$NON-NLS-1$
-          .append(footnote).append("</li>"); //$NON-NLS-1$
+          .append(useNote).append("</li>"); //$NON-NLS-1$
     }
-    return ((((("<sup><a href=\"#ftnte" + counter) + //$NON-NLS-1$
-        +'"') + '>') + counter) + "</a></sup>"); //$NON-NLS-1$
+    return ((((("<sup><a href=\"#ftnte" + counter) //$NON-NLS-1$
+        + '"') + '>') + counter) + "</a></sup>"); //$NON-NLS-1$
   }
 
   /**
@@ -354,7 +369,7 @@ final class _Fragment {
           || (this.m_footnotes.length() <= 0)) {
         return ""; //$NON-NLS-1$
       }
-
+      this.m_footnoteIDs.clear();
       sb = new StringBuilder();
       sb.append("<ol");//$NON-NLS-1$
       if (style != null) {
